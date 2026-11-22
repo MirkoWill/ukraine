@@ -49,6 +49,10 @@ p{margin:0}
 .pill-btn{border:1.5px solid rgba(223,231,180,.55);background:transparent;color:var(--hero-ink);border-radius:999px;padding:6px 14px;font-weight:700;letter-spacing:.06em;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
 .pill-btn[aria-pressed="true"]{background:var(--hero-ink);color:var(--hero)}
 .pill-btn svg{width:16px;height:16px}
+.spin svg{animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin svg{animation:none}}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(92px + env(safe-area-inset-bottom,0px));background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;font-weight:600;z-index:30;box-shadow:var(--shadow);white-space:nowrap}
 
 /* views */
 main{padding-block:22px}
@@ -143,6 +147,7 @@ nav.tabs a[aria-current="page"]{color:var(--olive)}
     <div class="hero-top">
       <div class="eyebrow" data-i="eyebrow">Berlin · Lwiw · Kyjiw · Чернігів</div>
       <div class="pills">
+        <button class="pill-btn" id="heroRefresh" type="button" aria-label="Aktualisieren"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5"/></svg></button>
         <button class="pill-btn" id="bigBtn" aria-pressed="false" type="button" title="Größere Schrift">A+</button>
         <button class="pill-btn" id="langBtn" type="button" aria-label="Sprache / Мова">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>
@@ -244,6 +249,7 @@ nav.tabs a[aria-current="page"]{color:var(--olive)}
 </div>
 
 </div></main>
+<div class="toast" id="toast" role="status" hidden></div>
 
 <nav class="tabs" aria-label="Navigation"><div class="inner">
   <a href="#live" data-v="live"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10 21a2 2 0 0 0 4 0"/></svg><span data-i="tLive">Live</span></a>
@@ -263,7 +269,7 @@ de:{
  linksT:"Live-Quellen",l1:"Karte aller Alarme nach Bezirk",l2:"Offizielle Alarm-App mit Ton",l3:"Staatliche Alarm-Karte",l4:"Frontverlauf und Grenzgebiete",
  subscribe:"In der App Чернігів, Київ und Броварський район abonnieren, auf der Fahrt zusätzlich die Oblaste der Strecke. In Telegram den Kanal „Чернігівська ОВА“ suchen.",
  stAlert:"Luftalarm",stPartial:"Alarm in Teilen der Oblast",stClear:"Kein Alarm",stUnknown:"Status unbekannt",
- since:"seit",stand:"Stand",ago:"vor {n} Min.",loading:"wird geladen …",stale:"Daten älter als 20 Minuten. Bitte die App nutzen.",
+ since:"seit",stand:"Stand",updatedNow:"Aktualisiert · Stand {s}",ago:"vor {n} Min.",loading:"wird geladen …",stale:"Daten älter als 20 Minuten. Bitte die App nutzen.",
  failed:"Live-Status gerade nicht abrufbar. Bitte die App oder alerts.in.ua nutzen.",typeART:"Artilleriegefahr",
  zLead:"Wie oft war zu welcher Uhrzeit Luftalarm? Kyjiwer Zeit, eine Stunde später als in Berlin.",
  p90:"90 Tage",p365:"12 Monate",bestWin:"Ruhigstes Fenster tagsüber",worstH:"Unruhigste Stunde",perDay:"Alarme pro Tag",medDur:"Typische Dauer",
@@ -306,7 +312,7 @@ uk:{
  linksT:"Джерела наживо",l1:"Мапа всіх тривог за районами",l2:"Офіційний застосунок зі звуком",l3:"Державна мапа тривог",l4:"Лінія фронту і прикордоння",
  subscribe:"У застосунку підпишіться на Чернігів, Київ і Броварський район, у дорозі також на області маршруту. У Telegram знайдіть канал «Чернігівська ОВА».",
  stAlert:"Повітряна тривога",stPartial:"Тривога в частині області",stClear:"Тривоги немає",stUnknown:"Статус невідомий",
- since:"з",stand:"Станом на",ago:"{n} хв тому",loading:"завантаження …",stale:"Дані старші за 20 хвилин. Користуйтеся застосунком.",
+ since:"з",stand:"Станом на",updatedNow:"Оновлено · станом на {s}",ago:"{n} хв тому",loading:"завантаження …",stale:"Дані старші за 20 хвилин. Користуйтеся застосунком.",
  failed:"Статус зараз недоступний. Користуйтеся застосунком або alerts.in.ua.",typeART:"Загроза артобстрілу",
  zLead:"Як часто о певній годині була повітряна тривога? За київським часом, на годину пізніше, ніж у Берліні.",
  p90:"90 днів",p365:"12 місяців",bestWin:"Найспокійніше вікно вдень",worstH:"Найнеспокійніша година",perDay:"Тривог на день",medDur:"Типова тривалість",
@@ -365,7 +371,7 @@ function applyText(){
   document.title=t("mark1")+" "+t("mark2");
   document.querySelectorAll("[data-i]").forEach(el=>{const v=t(el.dataset.i);if(typeof v==="string")el.textContent=v});
   document.querySelectorAll("[data-list]").forEach(ul=>{ul.innerHTML=t(ul.dataset.list).map(x=>`<li>${x}</li>`).join("")});
-  $("langLbl").textContent=lang==="uk"?"UA":"DE";
+  $("langLbl").textContent=lang==="uk"?"UA":"DE";$("heroRefresh").setAttribute("aria-label",t("refresh"));$("heroRefresh").title=t("refresh");
   $("words").innerHTML=t("words").map(([u,d])=>`<div class="row"><div class="grow"><div class="name">${u}</div><div class="sub">${lang==="uk"?d+" (нім.)":d}</div></div></div>`).join("");
   $("heroTitle").textContent=t(HERO[view]);
 }
@@ -379,6 +385,14 @@ function route(){
 }
 
 /* ---------- live ---------- */
+let toastTimer;
+function toast(msg){const el=$("toast");el.textContent=msg;el.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.hidden=true,3500)}
+async function manualRefresh(){
+  const btns=[$("refresh"),$("heroRefresh")];btns.forEach(b=>{b.classList.add("spin");b.disabled=true});
+  await loadLive();
+  btns.forEach(b=>{b.classList.remove("spin");b.disabled=false});
+  toast(LIVE&&!liveErr?fmt(t("updatedNow"),{s:localTime(LIVE.updated)}):t("failed"));
+}
 async function loadLive(){
   $("stand").textContent=t("loading");
   for(const u of LIVE_URLS){
@@ -480,7 +494,7 @@ function renderDist(){
 $("langBtn").onclick=()=>{lang=lang==="de"?"uk":"de";store.set("lang",lang);applyText();renderLive();renderStats();};
 $("bigBtn").onclick=()=>{const on=document.documentElement.classList.toggle("big");$("bigBtn").setAttribute("aria-pressed",String(on));store.set("big",on?"1":"")};
 if(store.get("big")){document.documentElement.classList.add("big");$("bigBtn").setAttribute("aria-pressed","true")}
-$("refresh").onclick=loadLive;
+$("refresh").onclick=manualRefresh;$("heroRefresh").onclick=manualRefresh;
 $("areaSel").onchange=e=>{area=e.target.value;renderStats()};
 $("periodSeg").onclick=e=>{const b=e.target.closest("button");if(b){period=b.dataset.p;renderStats()}};
 $("modeSeg").onclick=e=>{const b=e.target.closest("button");if(b){mode=b.dataset.m;renderPlan()}};
