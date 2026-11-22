@@ -28,3 +28,4 @@ jobs:
           git add live.json
           git -c user.name="github-actions" -c user.email="github-actions@users.noreply.github.com" commit -q -m "Live-Status"
           git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" live
+
