@@ -516,11 +516,19 @@ const QUOTES=[
  ["Je mehr ich gebe, je mehr auch hab ich: beides ist unendlich.","William Shakespeare, Romeo und Julia","Що більше я даю, то більше маю: обидва безмежні.","Вільям Шекспір, «Ромео і Джульєтта»"],
  ["Nun aber bleiben Glaube, Hoffnung, Liebe, diese drei; aber die Liebe ist die größte unter ihnen.","1. Korinther 13,13","А тепер залишаються віра, надія, любов, ці три; але найбільша між ними любов.","1 Коринтян 13:13"],
  ["Wo Liebe ist, da ist Gott.","Ukrainisches Sprichwort","Де любов, там і Бог.","Українське прислів'я"],
- ["Ohne Hoffnung hoffe ich.","Lesja Ukrajinka, Contra spem spero!","Без надії сподіваюсь!","Леся Українка, «Contra spem spero!»"]
+ ["Ohne Hoffnung hoffe ich.","Lesja Ukrajinka, Contra spem spero!","Без надії сподіваюсь!","Леся Українка, «Contra spem spero!»"],
+ ["Denn Liebe ist stark wie der Tod.","Hoheslied 8,6","Бо сильна, як смерть, любов.","Пісня над піснями 8:6"],
+ ["Gott ist Liebe; und wer in der Liebe bleibt, der bleibt in Gott und Gott in ihm.","1. Johannes 4,16","Бог є любов, і хто перебуває в любові, той перебуває в Бозі, і Бог у ньому.","1 Івана 4:16"],
+ ["Du hast mir das Herz genommen, meine Schwester, liebe Braut.","Hoheslied 4,9","Ти серце моє полонила, сестро моя, наречено.","Пісня над піснями 4:9"],
+ ["Über alles aber zieht an die Liebe, die da ist das Band der Vollkommenheit.","Kolosser 3,14","А над усім тим зодягніться в любов, що вона — союз досконалости.","Колосян 3:14"],
+ ["Der Herr behüte deinen Ausgang und Eingang von nun an bis in Ewigkeit.","Psalm 121,8","Господь буде пильнувати виходу твого й входу твого відтепер і навіки.","Псалом 121:8"],
+ ["Du bist zeitlebens für das verantwortlich, was du dir vertraut gemacht hast.","Antoine de Saint-Exupéry, Der kleine Prinz","Ти завжди відповідаєш за тих, кого приручив.","Антуан де Сент-Екзюпері, «Маленький принц»"],
+ ["Und doch, welch Glück, geliebt zu werden! Und lieben, Götter, welch ein Glück!","Johann Wolfgang von Goethe, Willkommen und Abschied","І все ж яке це щастя — бути коханим! І кохати, боги, яке це щастя!","Йоганн Вольфганг фон Ґете, «Зустріч і прощання»"],
+ ["Liebe ist der Endzweck der Weltgeschichte, das Amen des Universums.","Novalis","Любов — кінцева мета світової історії, амінь усесвіту.","Новаліс"]
 ];
 function renderQuote(show){
   const el=$("quote");el.hidden=!show;if(!show)return;
-  const q=QUOTES[Math.floor(Date.now()/3600000)%QUOTES.length];
+  const q=QUOTES[(Math.floor(Date.now()/3600000)+Math.floor(Date.now()/86400000)*5)%QUOTES.length]; // shifts by 5 each day, so the same hour shows a different quote tomorrow
   $("quoteText").textContent=lang==="uk"?q[2]:q[0];
   $("quoteSrc").textContent="— "+(lang==="uk"?q[3]:q[1]);
 }
