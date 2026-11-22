@@ -120,6 +120,11 @@ table.heat td{width:24px;min-width:24px;height:24px;border-radius:4px;text-align
 .leg .t{font-weight:700;font-variant-numeric:tabular-nums}
 .leg .pct{font-weight:700;font-variant-numeric:tabular-nums;padding:3px 10px;border-radius:999px;font-size:.92rem}
 .pct.ok{background:var(--ok-soft);color:var(--ok)} .pct.warn{background:var(--warn-soft);color:#8a5f00} .pct.bad{background:var(--bad-soft);color:var(--bad)}
+.kmhead{display:flex;flex-direction:column;gap:2px}
+.row.border{background:var(--olive-soft);margin:0 -18px;padding-left:18px;padding-right:18px}
+.km{font-weight:700;font-variant-numeric:tabular-nums;width:78px;flex:none}
+.cc{font-size:.75rem;font-weight:700;letter-spacing:.06em;border-radius:999px;padding:2px 8px;border:1.5px solid currentColor}
+.cc.ua{color:var(--bad)} .cc.pl,.cc.de{color:var(--ok)}
 .flag{display:inline-block;font-size:.78rem;font-weight:700;color:var(--bad);margin-left:6px}
 
 ul.rules{margin:0;padding-left:1.15em;display:flex;flex-direction:column;gap:9px}
@@ -221,6 +226,13 @@ nav.tabs a[aria-current="page"]{color:var(--olive)}
     <p class="small muted" data-i="planNote">Fahrzeiten sind Richtwerte. Prozent: wie oft in den letzten 90 Tagen zu dieser Uhrzeit in diesem Gebiet Alarm war.</p>
   </div>
 
+  <h2 class="sec" data-i="kmT">Kilometer</h2>
+  <div class="card">
+    <div class="kmhead"><span class="big-num" id="kmTotal"></span><span class="muted small" id="kmSub"></span></div>
+    <div class="list" id="kmList"></div>
+    <p class="small muted" data-i="kmNote">Straßenkilometer nach OpenStreetMap. Fahrzeiten ohne Pausen und ohne Wartezeit an der Grenze.</p>
+  </div>
+
   <h2 class="sec" data-i="wayT">Der Weg</h2>
   <div class="card steps" id="steps"></div>
 
@@ -283,12 +295,13 @@ de:{
  sumAvg:"Durchschnitt über die Fahrt: <b>{p} %</b>. Ankunft Tschernihiw etwa <b>{a}</b> (Kyjiwer Zeit).",
  curfewHit:"Fällt in die Ausgangssperre",curfewWarn:"Mit dem Auto liegt ein Teil der Fahrt in der Ausgangssperre (00–05 Uhr). Das ist nicht erlaubt.",
  best:"Beste Abfahrt: {h} (Ø {p} %)",change:"Umstieg in Kyjiw",
+ kmT:"Kilometer",kmNote:"Straßenkilometer nach OpenStreetMap. Fahrzeiten ohne Pausen und ohne Wartezeit an der Grenze.",kmTot:"km von Wartenberg bis Tschernihiw",kmSub:"{a} km bis zur ukrainischen Grenze · reine Fahrzeit etwa {h} Std.",border:"Grenze",zoneUA:"Alarmgebiet",
  wayT:"Der Weg",distT:"Bezirke der Oblast Tschernihiw",alarmShare:"der Zeit unter Alarm",
  avoidT:"Nicht fahren",
  avoid:"Straßen im Grenzstreifen zu Russland und Belarus, besonders um Nowhorod-Siwerskyj, Semeniwka, Korjukiwka-Nord, Horodnja und Ripky. Dort gibt es Beschuss und Angriffe mit FPV-Drohnen auf Fahrzeuge, auch tagsüber. Keine Abkürzungen über Nebenstraßen nach Norden oder Osten.",
  steps:[
-  ["Berlin → polnische Grenze","Zug über Wrocław und Kraków nach Przemyśl (etwa 9–11 Std.) oder Fernbus direkt nach Lwiw. Mit dem Auto über die A4 nach Korczowa. In Polen gibt es keinen Luftalarm. Polen hat die Berliner Zeit."],
-  ["Grenze Polen → Ukraine","Zug: ukrainischer Zug ab Przemyśl nach Lwiw oder direkt nach Kyjiw, die Kontrolle läuft im Zug. Auto: Korczowa–Krakiwez oder Hrebenne–Rawa-Ruska; Wartezeiten vorher prüfen (Links unten). Ab der Grenze gilt Kyjiwer Zeit, die Uhr eine Stunde vorstellen."],
+  ["Wartenberg → Grenze Frankfurt (Oder)","Über die A10 und A12 zur Grenze bei Frankfurt (Oder)/Świecko, 114 km. Danach in Polen über die A2 nach Poznań und Warschau, dann die S17 über Lublin und Zamość bis Hrebenne. In Polen gibt es keinen Luftalarm. Polen hat die Berliner Zeit."],
+  ["Grenze Hrebenne → Rawa-Ruska","Grenzübergang für Autos nach 926 km, Wartezeiten vorher prüfen (Links unten). Wer mit dem Zug fährt: ukrainischer Zug ab Przemyśl, die Kontrolle läuft im Zug. Ab der Grenze gilt Kyjiwer Zeit, die Uhr eine Stunde vorstellen."],
   ["Lwiw","Hier beginnt das Alarmgebiet, die Alarm-App jetzt einschalten. Lwiw ist seltener betroffen, wird aber bei großen Angriffswellen nachts mit Raketen und Drohnen angegriffen."],
   ["Lwiw → Kyjiw","Zug (Intercity etwa 5–7 Std., über Ternopil, Chmelnyzkyj, Winnyzja) oder Auto über die M06 durch Riwne und Schytomyr (etwa 540 km, 7–8 Std.). Nachtzüge fahren auch während Alarm; das ist die übliche Art zu reisen."],
   ["Kyjiw","Kyjiw wird vor allem nachts angegriffen. Bei Ankunft in der Nacht im Bahnhof bleiben; der Bahnhof und die Metro dienen als Schutzraum."],
@@ -326,12 +339,13 @@ uk:{
  sumAvg:"У середньому за поїздку: <b>{p} %</b>. Прибуття до Чернігова приблизно о <b>{a}</b> (за київським часом).",
  curfewHit:"Під час комендантської",curfewWarn:"На авто частина поїздки припадає на комендантську годину (00–05). Це заборонено.",
  best:"Найкращий виїзд: {h} (Ø {p} %)",change:"Пересадка в Києві",
+ kmT:"Кілометри",kmNote:"Кілометри доріг за OpenStreetMap. Час у дорозі без зупинок і без очікування на кордоні.",kmTot:"км від Вартенберга до Чернігова",kmSub:"{a} км до українського кордону · чистий час у дорозі приблизно {h} год",border:"Кордон",zoneUA:"Зона тривог",
  wayT:"Шлях",distT:"Райони Чернігівської області",alarmShare:"часу під тривогою",
  avoidT:"Не їхати",
  avoid:"Дороги в прикордонній смузі з росією та білоруссю, особливо біля Новгорода-Сіверського, Семенівки, півночі Корюківщини, Городні та Ріпок. Там обстріли та атаки FPV-дронів на автомобілі, навіть удень. Не скорочуйте шлях бічними дорогами на північ чи схід.",
  steps:[
-  ["Берлін → польський кордон","Потягом через Вроцлав і Краків до Перемишля (приблизно 9–11 год) або автобусом напряму до Львова. Авто: трасою A4 до Корчови. У Польщі тривог немає. У Польщі берлінський час."],
-  ["Кордон Польща → Україна","Потяг: український потяг з Перемишля до Львова або одразу до Києва, контроль у вагоні. Авто: Корчова–Краківець або Гребенне–Рава-Руська; черги перевірте заздалегідь (посилання нижче). Після кордону київський час, переведіть годинник на годину вперед."],
+  ["Вартенберг → кордон Франкфурт-на-Одері","Трасами A10 і A12 до кордону біля Франкфурта-на-Одері/Свецко, 114 км. Далі в Польщі трасою A2 до Познані й Варшави, потім S17 через Люблін і Замостя до Гребенного. У Польщі тривог немає. У Польщі берлінський час."],
+  ["Кордон Гребенне → Рава-Руська","Пункт пропуску для авто після 926 км, черги перевірте заздалегідь (посилання нижче). Потягом: український потяг з Перемишля, контроль у вагоні. Після кордону київський час, переведіть годинник на годину вперед."],
   ["Львів","Тут починається зона тривог, увімкніть застосунок. Львів страждає рідше, але під час масованих атак його вночі атакують ракетами й дронами."],
   ["Львів → Київ","Потяг (Інтерсіті приблизно 5–7 год, через Тернопіль, Хмельницький, Вінницю) або авто трасою М06 через Рівне й Житомир (приблизно 540 км, 7–8 год). Нічні потяги їдуть і під час тривоги; так зазвичай і подорожують."],
   ["Київ","Київ атакують переважно вночі. Якщо прибуття вночі, лишайтеся на вокзалі; вокзал і метро слугують укриттям."],
@@ -353,6 +367,22 @@ const LEGS={
  car:[["lviv",1.5],["rivne",2],["zhytomyr",2.5],["kyivobl",1],["kyiv",.75],["brovary",.75],["chernihiv",1.25]],
  train:[["lviv",1],["ternopil",1.5],["khmelnytskyi",1.5],["vinnytsia",1.5],["kyivobl",1.25],["kyiv",1.5,"change"],["brovary",.75],["chernihiv",1.25]]
 };
+// road km from OSRM (OpenStreetMap): [de, uk, country, segment km, road, minutes, isBorder]
+const KM=[
+ ["Berlin-Wartenberg","Берлін-Вартенберг","de",0,"",0],
+ ["Grenze Frankfurt (Oder) / Świecko","Кордон Франкфурт-на-Одері / Свецко","de",114,"A10 · A12",80,1],
+ ["Poznań","Познань","pl",176,"A2",120],
+ ["Warszawa","Варшава","pl",314,"A2",192],
+ ["Lublin","Люблін","pl",173,"S17",126],
+ ["Zamość","Замостя","pl",87,"S17",84],
+ ["Grenze Hrebenne / Rawa-Ruska","Кордон Гребенне / Рава-Руська","pl",63,"S17",66,1],
+ ["Lwiw","Львів","ua",73,"M09",90],
+ ["Riwne","Рівне","ua",211,"M06",210],
+ ["Schytomyr","Житомир","ua",189,"M06",156],
+ ["Kyjiw","Київ","ua",141,"M06",120],
+ ["Browary","Бровари","ua",26,"M01",36],
+ ["Tschernihiw","Чернігів","ua",119,"M01",114]
+];
 const LIVE_URLS=["https://api.github.com/repos/MirkoWill/ukraine/contents/live.json?ref=live","https://raw.githubusercontent.com/MirkoWill/ukraine/live/live.json"];
 
 const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
@@ -484,6 +514,16 @@ function renderPlan(){
   $("bestBtn").onclick=()=>{dep=best.h;renderPlan()};
   $("steps").innerHTML=t("steps").map(([h,x],i)=>`<div class="step"><span class="n">${i+1}</span><div><h3>${h}</h3><p>${x}</p>${i===1?`<p class="small" style="margin-top:6px">${t("borderLinks")} <a href="https://granica.gov.pl/" target="_blank" rel="noopener">granica.gov.pl</a> · <a href="https://dpsu.gov.ua/" target="_blank" rel="noopener">dpsu.gov.ua</a></p>`:""}</div></div>`).join("");
 }
+function renderKm(){
+  let cum=0,mins=0,toBorder=0;
+  const rows=KM.map(([de,uk,cc,km,road,m,b],i)=>{cum+=km;mins+=m;if(b&&cc==="pl")toBorder=cum;
+    const dur=m?`${Math.floor(m/60)}:${String(m%60).padStart(2,"0")} h`:"";
+    const sub=i?`+${km} km · ${road} · ${dur}`:"";
+    return `<div class="row${b?" border":""}"><span class="km">${cum.toLocaleString("de-DE")} km</span><div class="grow"><div class="name">${lang==="uk"?uk:de}</div><div class="sub">${b?t("border")+" · ":""}${sub}</div></div><span class="cc ${cc}" title="${cc==="ua"?t("zoneUA"):""}">${cc.toUpperCase()}</span></div>`});
+  $("kmList").innerHTML=rows.join("");
+  $("kmTotal").textContent=cum.toLocaleString("de-DE")+" km";
+  $("kmSub").textContent=t("kmTot")+" · "+fmt(t("kmSub"),{a:toBorder,h:Math.round(mins/60)});
+}
 function renderDist(){
   const map=[["chernihiv","chernihivR"],["nizhyn","nizhyn"],["prylutskyi","prylutskyi"],["koriukivka","koriukivka"],["novhorod","novhorod"]];
   $("dist").innerHTML=map.map(([k,n])=>{const x=STATS.areas[k].d90,p=x.total_pct,c=p<25?"ok":p<45?"warn":"bad";
@@ -491,7 +531,7 @@ function renderDist(){
 }
 
 /* ---------- events ---------- */
-$("langBtn").onclick=()=>{lang=lang==="de"?"uk":"de";store.set("lang",lang);applyText();renderLive();renderStats();};
+$("langBtn").onclick=()=>{lang=lang==="de"?"uk":"de";store.set("lang",lang);applyText();renderLive();renderStats();renderKm();};
 $("bigBtn").onclick=()=>{const on=document.documentElement.classList.toggle("big");$("bigBtn").setAttribute("aria-pressed",String(on));store.set("big",on?"1":"")};
 if(store.get("big")){document.documentElement.classList.add("big");$("bigBtn").setAttribute("aria-pressed","true")}
 $("refresh").onclick=manualRefresh;$("heroRefresh").onclick=manualRefresh;
@@ -503,7 +543,7 @@ window.addEventListener("hashchange",route);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)loadLive()});
 setInterval(loadLive,120000);
 
-applyText();route();loadLive();
+applyText();route();loadLive();renderKm();
 fetch("data/stats.json").then(r=>r.json()).then(d=>{STATS=d;renderStats()}).catch(()=>{$("srcNote").textContent="data/stats.json?"});
 </script>
 </body>
