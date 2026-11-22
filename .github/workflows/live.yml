@@ -1,0 +1,30 @@
+name: Live-Alarmstatus
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: live-status
+  cancel-in-progress: true
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Alarmstatus abrufen
+        run: python3 tools/live.py /tmp/live.json
+      - name: Auf Branch "live" ablegen (ein einziger Commit, ohne Verlauf)
+        run: |
+          cd "$(mktemp -d)"
+          git init -q -b live
+          cp /tmp/live.json .
+          git add live.json
+          git -c user.name="github-actions" -c user.email="github-actions@users.noreply.github.com" commit -q -m "Live-Status"
+          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" live

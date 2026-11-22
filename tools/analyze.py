@@ -9,6 +9,13 @@ AREAS={
  'novhorod':   lambda o,ra:o=='Chernihivska oblast' and ra in('','Novhorod-Siverskyi raion'),
  'prylutskyi': lambda o,ra:o=='Chernihivska oblast' and ra in('','Prylutskyi raion'),
  'koriukivka': lambda o,ra:o=='Chernihivska oblast' and ra in('','Koriukivskyi raion'),
+ 'lviv':       lambda o,ra:o=='Lvivska oblast' and ra in('','Lvivskyi raion'),
+ 'rivne':      lambda o,ra:o=='Rivnenska oblast' and ra in('','Rivnenskyi raion'),
+ 'zhytomyr':   lambda o,ra:o=='Zhytomyrska oblast' and ra in('','Zhytomyrskyi raion'),
+ 'ternopil':   lambda o,ra:o=='Ternopilska oblast' and ra in('','Ternopilskyi raion'),
+ 'khmelnytskyi':lambda o,ra:o=='Khmelnytska oblast' and ra in('','Khmelnytskyi raion'),
+ 'vinnytsia':  lambda o,ra:o=='Vinnytska oblast' and ra in('','Vinnytskyi raion'),
+ 'kyivobl':    lambda o,ra:o=='Kyivska oblast' and ra in('','Buchanskyi raion','Fastivskyi raion'),
 }
 iv={k:[] for k in AREAS}
 p=lambda s:dt.datetime.fromisoformat(s)
@@ -60,7 +67,4 @@ for k in AREAS:
     res['areas'][k]={'y1':stats(m,end-dt.timedelta(days=365)),'d90':stats(m,end-dt.timedelta(days=90)),
        'monthly':{k2:[v[0],round(v[1],1)] for k2,v in sorted(monthly.items())}}
 json.dump(res,open(sys.argv[2],'w'),separators=(',',':'))
-c=res['areas']['chernihiv']
-print(res['data_until']); print(c['y1']['hour_pct']); print(c['d90']['hour_pct']); print({k:c['d90'][k] for k in('n','median_min','per_day','total_pct')})
-for k in AREAS: print(k,res['areas'][k]['d90']['per_day'],res['areas'][k]['d90']['total_pct'])
-print(list(c['monthly'].items())[-14:])
+print('ok',res['data_until'],len(res['areas']))
