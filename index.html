@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="de">
+<html lang="uk">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#f6f6f3">
-<title>Reise nach Tschernihiw</title>
+<title>Поїздка до Чернігова</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600&family=Playfair+Display:wght@400;500&family=Source+Sans+3:wght@400;600;700&display=swap">
@@ -356,7 +356,7 @@ const LEGS={
 const LIVE_URLS=["https://api.github.com/repos/MirkoWill/ukraine/contents/live.json?ref=live","https://raw.githubusercontent.com/MirkoWill/ukraine/live/live.json"];
 
 const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
-let lang=store.get("lang")||((navigator.language||"").startsWith("uk")?"uk":"de");
+let lang=store.get("lang")||"uk";
 let view="live",area="chernihiv",period="d90",mode="train",dep=19,STATS=null,LIVE=null,liveErr=false;
 const $=id=>document.getElementById(id);
 const t=k=>T[lang][k];
