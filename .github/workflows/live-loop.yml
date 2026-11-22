@@ -1,0 +1,43 @@
+name: Live-Alarmstatus (Dauerlauf)
+
+# Einmal starten ("Run workflow"), dann aktualisiert dieser Lauf den Status
+# alle 2 Minuten, bis die eingestellte Dauer erreicht ist (höchstens 5,5 Std.).
+# Gedacht für die Reise, weil GitHubs Zeitplan oft verspätet oder gar nicht startet.
+
+on:
+  workflow_dispatch:
+    inputs:
+      minutes:
+        description: "Wie lange aktualisieren (Minuten, höchstens 330)"
+        default: "330"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: live-loop
+  cancel-in-progress: true
+
+jobs:
+  loop:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    steps:
+      - uses: actions/checkout@v4
+      - name: Status alle 2 Minuten aktualisieren
+        env:
+          MINUTES: ${{ inputs.minutes }}
+          REPO: ${{ github.repository }}
+          TOKEN: ${{ github.token }}
+        run: |
+          m=${MINUTES:-330}; [ "$m" -gt 330 ] && m=330
+          end=$(( $(date +%s) + m*60 ))
+          work="$(mktemp -d)"
+          while [ "$(date +%s)" -lt "$end" ]; do
+            if python3 tools/live.py "$work/live.json"; then
+              ( cd "$work" && rm -rf .git && git init -q -b live && git add live.json \
+                && git -c user.name="github-actions" -c user.email="github-actions@users.noreply.github.com" commit -q -m "Live-Status" \
+                && git push -q -f "https://x-access-token:${TOKEN}@github.com/${REPO}.git" live ) || echo "Push fehlgeschlagen"
+            fi
+            sleep 120
+          done
