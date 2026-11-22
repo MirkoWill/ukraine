@@ -81,6 +81,9 @@ h3{font-size:1.1rem;font-weight:700}
 .now{display:flex;flex-direction:column;gap:6px}
 .now .state{font-family:var(--f-head);font-size:1.9rem;line-height:1.15}
 .now.bad{background:var(--bad-soft)} .now.ok{background:var(--ok-soft)} .now.warn{background:var(--warn-soft)}
+.quote{margin:8px 0 0;padding-top:12px;border-top:1px solid rgba(76,122,43,.25);display:flex;flex-direction:column;gap:4px}
+.quote blockquote{margin:0;font-family:var(--f-head);font-style:italic;font-size:1.02rem;line-height:1.45;color:var(--ink);opacity:.85}
+.quote figcaption{font-size:.82rem;color:var(--muted)}
 .now.bad .state{color:var(--bad)} .now.ok .state{color:var(--ok)} .now.warn .state{color:#8a5f00}
 
 .list{display:flex;flex-direction:column}
@@ -185,6 +188,7 @@ nav.tabs a[aria-current="page"]{color:var(--olive)}
     <span class="muted small" data-i="nowLabel">Stadt Tschernihiw, jetzt</span>
     <span class="state" id="nowState">…</span>
     <span id="nowSub" class="muted"></span>
+    <figure class="quote" id="quote" hidden><blockquote id="quoteText"></blockquote><figcaption id="quoteSrc"></figcaption></figure>
   </div>
   <div class="card">
     <h3 data-i="routeNow">Strecke jetzt</h3>
@@ -495,16 +499,42 @@ function stOf(a){return a?a.status:"unknown"}
 function stTxt(s){return {alert:t("stAlert"),partial:t("stPartial"),clear:t("stClear")}[s]||t("stUnknown")}
 function stCls(s){return {alert:"bad",partial:"warn",clear:"ok"}[s]||""}
 function localTime(iso){try{return new Date(iso).toLocaleTimeString(lang==="uk"?"uk-UA":"de-DE",{hour:"2-digit",minute:"2-digit",timeZone:"Europe/Kyiv"})}catch(e){return""}}
+// one quote per hour (Kyiv/Berlin hour boundaries coincide), wording and sources verified
+const QUOTES=[
+ ["Man sieht nur mit dem Herzen gut. Das Wesentliche ist für die Augen unsichtbar.","Antoine de Saint-Exupéry, Der kleine Prinz","Пильне лише серце. Найголовнішого очима не побачиш.","Антуан де Сент-Екзюпері, «Маленький принц»"],
+ ["Die Liebe ist langmütig und freundlich.","1. Korinther 13,4","Любов довготерпить, любов милосердствує.","1 Коринтян 13:4"],
+ ["Furcht ist nicht in der Liebe, sondern die vollkommene Liebe treibt die Furcht aus.","1. Johannes 4,18","У любові страху нема, бо досконала любов проганяє страх.","1 Івана 4:18"],
+ ["Wo du hingehst, da will ich auch hingehen; wo du bleibst, da bleibe ich auch.","Rut 1,16","Куди ти підеш, піду й я, і де ти ночуватимеш, ночуватиму й я.","Рут 1:16"],
+ ["Liebe besteht nicht darin, dass man einander ansieht, sondern dass man gemeinsam in die gleiche Richtung blickt.","Antoine de Saint-Exupéry, Wind, Sand und Sterne","Кохати — це не дивитися одне на одного, а разом дивитися в одному напрямку.","Антуан де Сент-Екзюпері, «Планета людей»"],
+ ["Viele Wasser können die Liebe nicht auslöschen.","Hoheslied 8,7","Великі води не зможуть погасити любови.","Пісня над піснями 8:7"],
+ ["Das höchste Glück des Lebens ist die Gewissheit, geliebt zu werden.","Victor Hugo, Die Elenden","Найвище щастя в житті — це певність, що тебе люблять.","Віктор Гюго, «Знедолені»"],
+ ["Ich trage im Herzen, was nicht stirbt.","Lesja Ukrajinka","Я в серці маю те, що не вмирає.","Леся Українка"],
+ ["Die Erinnerung ist das einzige Paradies, aus dem wir nicht vertrieben werden können.","Jean Paul","Спогад — єдиний рай, з якого нас не можуть вигнати.","Жан Поль"],
+ ["Sie erträgt alles, sie glaubt alles, sie hofft alles, sie duldet alles. Die Liebe hört niemals auf.","1. Korinther 13,7–8","Усе зносить, вірить усьому, сподівається всього, усе терпить. Любов ніколи не перестає.","1 Коринтян 13:7–8"],
+ ["Liebe besteht darin, dass zwei Einsamkeiten einander schützen, grenzen und grüßen.","Rainer Maria Rilke, Briefe an einen jungen Dichter","Любов у тому, що дві самотності оберігають, окреслюють і вітають одна одну.","Райнер Марія Рільке, «Листи до молодого поета»"],
+ ["Denn er hat seinen Engeln befohlen, dass sie dich behüten auf allen deinen Wegen.","Psalm 91,11","Бо Він накаже про тебе Своїм Анголам, щоб тебе пильнували на всіх дорогах твоїх.","Псалом 91:11"],
+ ["Je mehr ich gebe, je mehr auch hab ich: beides ist unendlich.","William Shakespeare, Romeo und Julia","Що більше я даю, то більше маю: обидва безмежні.","Вільям Шекспір, «Ромео і Джульєтта»"],
+ ["Nun aber bleiben Glaube, Hoffnung, Liebe, diese drei; aber die Liebe ist die größte unter ihnen.","1. Korinther 13,13","А тепер залишаються віра, надія, любов, ці три; але найбільша між ними любов.","1 Коринтян 13:13"],
+ ["Wo Liebe ist, da ist Gott.","Ukrainisches Sprichwort","Де любов, там і Бог.","Українське прислів'я"],
+ ["Ohne Hoffnung hoffe ich.","Lesja Ukrajinka, Contra spem spero!","Без надії сподіваюсь!","Леся Українка, «Contra spem spero!»"]
+];
+function renderQuote(show){
+  const el=$("quote");el.hidden=!show;if(!show)return;
+  const q=QUOTES[Math.floor(Date.now()/3600000)%QUOTES.length];
+  $("quoteText").textContent=lang==="uk"?q[2]:q[0];
+  $("quoteSrc").textContent="— "+(lang==="uk"?q[3]:q[1]);
+}
 function renderLive(){
   if(liveErr||!LIVE){
     $("stand").textContent=t("failed");$("nowState").textContent=t("stUnknown");$("nowCard").className="card now";$("nowSub").textContent="";
-    $("liveList").innerHTML="";return;
+    $("liveList").innerHTML="";renderQuote(false);return;
   }
   const age=Math.max(0,Math.round((Date.now()-new Date(LIVE.updated))/60000));
   $("stand").textContent=`${t("stand")} ${localTime(LIVE.updated)} · ${fmt(t("ago"),{n:age})}`+(age>20?` · ${t("stale")}`:"");
   const c=LIVE.areas.chernihiv_city,s=stOf(c);
   $("nowCard").className="card now "+stCls(s);
   $("nowState").textContent=stTxt(s);
+  renderQuote(s==="clear");
   $("nowSub").textContent=c&&c.since?`${t("since")} ${localTime(c.since)}`+(c.types&&c.types.includes("ARTILLERY")?` · ${t("typeART")}`:""):"";
   $("liveList").innerHTML=LIVE_ORDER.map(k=>{const a=LIVE.areas[k],s=stOf(a);
     return `<div class="row"><span class="dot ${stCls(s)}"></span><div class="grow"><div class="name">${t("areas")[k]}</div><div class="sub">${stTxt(s)}</div></div><div class="right">${a&&a.since&&s!=="clear"?t("since")+" "+localTime(a.since):""}</div></div>`}).join("");
