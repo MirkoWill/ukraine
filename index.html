@@ -353,8 +353,8 @@ de:{
  avoidT:"Nicht fahren",
  avoid:"Straßen im Grenzstreifen zu Russland und Belarus, besonders um Nowhorod-Siwerskyj, Semeniwka, Korjukiwka-Nord, Horodnja und Ripky. Dort gibt es Beschuss und Angriffe mit FPV-Drohnen auf Fahrzeuge, auch tagsüber. Keine Abkürzungen über Nebenstraßen nach Norden oder Osten.",
  steps:[
-  ["Wartenberg → Grenze Görlitz","Über die A10 und A13 nach Süden bis Dresden, dann die A4 zur Grenze bei Görlitz, 329 km. In Polen weiter auf der A4 über Wrocław, Katowice, Kraków und Rzeszów bis Korczowa. In Polen gibt es keinen Luftalarm. Polen hat die Berliner Zeit."],
-  ["Grenze Korczowa → Krakiwez","Grenzübergang für Autos nach 1.012 km, Wartezeiten vorher prüfen (Links unten). Danach 80 km auf der M10 nach Lwiw. Ab der Grenze gilt Kyjiwer Zeit, die Uhr eine Stunde vorstellen."],
+  ["Wartenberg → Grenze Forst","Über die A10, A13 und A15 an Cottbus vorbei zur Grenze bei Forst/Olszyna, 190 km. In Polen auf der A18 bis Krzyżowa, dann die A4 über Wrocław, Katowice, Kraków und Rzeszów bis Korczowa. In Polen gibt es keinen Luftalarm. Polen hat die Berliner Zeit."],
+  ["Grenze Korczowa → Krakiwez","Grenzübergang für Autos nach 897 km, Wartezeiten vorher prüfen (Links unten). Danach 80 km auf der M10 nach Lwiw. Ab der Grenze gilt Kyjiwer Zeit, die Uhr eine Stunde vorstellen."],
   ["Lwiw","Hier beginnt das Alarmgebiet, die Alarm-App jetzt einschalten. Lwiw ist seltener betroffen, wird aber bei großen Angriffswellen nachts mit Raketen und Drohnen angegriffen."],
   ["Lwiw → Kyjiw","Zug (Intercity etwa 5–7 Std., über Ternopil, Chmelnyzkyj, Winnyzja) oder Auto über die M06 durch Riwne und Schytomyr (etwa 540 km, 7–8 Std.). Nachtzüge fahren auch während Alarm; das ist die übliche Art zu reisen."],
   ["Kyjiw","Kyjiw wird vor allem nachts angegriffen. Bei Ankunft in der Nacht im Bahnhof bleiben; der Bahnhof und die Metro dienen als Schutzraum."],
@@ -405,8 +405,8 @@ uk:{
  avoidT:"Не їхати",
  avoid:"Дороги в прикордонній смузі з росією та білоруссю, особливо біля Новгорода-Сіверського, Семенівки, півночі Корюківщини, Городні та Ріпок. Там обстріли та атаки FPV-дронів на автомобілі, навіть удень. Не скорочуйте шлях бічними дорогами на північ чи схід.",
  steps:[
-  ["Вартенберг → кордон Ґерліц","Трасами A10 і A13 на південь до Дрездена, далі A4 до кордону біля Ґерліца, 329 км. У Польщі далі трасою A4 через Вроцлав, Катовіце, Краків і Ряшів до Корчови. У Польщі тривог немає. У Польщі берлінський час."],
-  ["Кордон Корчова → Краковець","Пункт пропуску для авто після 1012 км, черги перевірте заздалегідь (посилання нижче). Далі 80 км трасою М10 до Львова. Після кордону київський час, переведіть годинник на годину вперед."],
+  ["Вартенберг → кордон Форст","Трасами A10, A13 і A15 повз Котбус до кордону біля Форста/Ольшини, 190 км. У Польщі трасою A18 до Кшижової, далі A4 через Вроцлав, Катовіце, Краків і Ряшів до Корчови. У Польщі тривог немає. У Польщі берлінський час."],
+  ["Кордон Корчова → Краковець","Пункт пропуску для авто після 897 км, черги перевірте заздалегідь (посилання нижче). Далі 80 км трасою М10 до Львова. Після кордону київський час, переведіть годинник на годину вперед."],
   ["Львів","Тут починається зона тривог, увімкніть застосунок. Львів страждає рідше, але під час масованих атак його вночі атакують ракетами й дронами."],
   ["Львів → Київ","Потяг (Інтерсіті приблизно 5–7 год, через Тернопіль, Хмельницький, Вінницю) або авто трасою М06 через Рівне й Житомир (приблизно 540 км, 7–8 год). Нічні потяги їдуть і під час тривоги; так зазвичай і подорожують."],
   ["Київ","Київ атакують переважно вночі. Якщо прибуття вночі, лишайтеся на вокзалі; вокзал і метро слугують укриттям."],
@@ -431,9 +431,8 @@ const LEGS={
 // road km from OSRM (OpenStreetMap): [de, uk, country, segment km, road, minutes, isBorder]
 const KM=[
  ["Berlin-Wartenberg","Берлін-Вартенберг","de",0,"",0],
- ["Dreieck Dresden-Nord","Розв'язка Дрезден-Північ","de",221,"A10 · A13",145],
- ["Grenze Görlitz / Jędrzychowice","Кордон Ґерліц / Єнджиховіце","de",108,"A4",72,1],
- ["Wrocław","Вроцлав","pl",158,"A4",109],
+ ["Grenze Forst / Olszyna","Кордон Форст / Ольшина","de",190,"A10 · A13 · A15",120,1],
+ ["Wrocław","Вроцлав","pl",182,"A18 · A4",117],
  ["Katowice","Катовіце","pl",187,"A4",110],
  ["Kraków","Краків","pl",90,"A4",62],
  ["Grenze Korczowa / Krakiwez","Кордон Корчова / Краковець","pl",248,"A4 (Rzeszów)",139,1],
