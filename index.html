@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#f6f6f3">
 <title>Поїздка до Чернігова</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600&family=Playfair+Display:wght@400;500&family=Source+Sans+3:wght@400;600;700&display=swap">
+
+
+<link rel="stylesheet" href="fonts/fonts.css">
 <style>
 /* Layout: phone-first app shell. Wordmark header, dark slanted hero band with language/size pills,
    four views (Live, Zeiten, Route, Regeln) switched by a fixed bottom tab bar. Light theme only, by choice. */
@@ -135,6 +135,15 @@ ul.rules{margin:0;padding-left:1.15em;display:flex;flex-direction:column;gap:9px
 .notice{border-left:5px solid var(--bad);background:var(--surface);border-radius:12px;padding:14px 16px;box-shadow:var(--shadow)}
 
 /* bottom tab bar */
+footer.foot{background:#2b2f33;color:#e6e6e1;padding-block:34px 30px;margin-top:20px;text-align:center}
+footer.foot .inner{display:flex;flex-direction:column;gap:10px;align-items:center}
+footer.foot .ft{font-family:var(--f-head);font-size:1.7rem;color:#fff;line-height:1.2}
+footer.foot .by b{color:var(--hero-ink)}
+footer.foot nav{display:flex;flex-wrap:wrap;gap:6px 10px;justify-content:center;margin-top:6px}
+footer.foot nav a{color:#fff;text-underline-offset:4px}
+.legal{display:flex;flex-direction:column;gap:8px}
+.legal h2{font-family:var(--f-head);font-weight:400;font-size:1.6rem;color:var(--olive);margin-top:10px}
+.legal a{color:var(--olive-dark)}
 nav.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);
   padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px);z-index:20}
 nav.tabs .inner{display:grid;grid-template-columns:repeat(4,1fr)}
@@ -260,7 +269,39 @@ nav.tabs a[aria-current="page"]{color:var(--olive)}
   </div>
 </div>
 
+<!-- IMPRESSUM -->
+<div class="view legal" id="v-impressum" hidden>
+  <h2 data-i="impH1">Angaben gemäß §&nbsp;5 DDG</h2>
+  <p><b>Willbrandt und Kompagnon</b><br><span data-i="impOwner">Inh. Mirko Willbrandt</span><br><span data-i="impFound">Unternehmen in Gründung</span></p>
+  <p>Lindenberger Str. 6<br>13059 Berlin</p>
+  <h2 data-i="impContact">Kontakt</h2>
+  <p><span data-i="impTel">Telefon</span>: <a href="tel:+493099270747">+49 30 99 27 07 47</a><br><span data-i="impMail">E-Mail</span>: info[at]willbrandt-kompagnon.de</p>
+  <h2 data-i="impNotes">Hinweise</h2>
+  <p data-i="impN1">Diese Seite ist ein unentgeltliches Hilfsangebot für Reisende nach Tschernihiw. Alle Angaben ohne Gewähr. Die Statistik beruht auf vergangenen Luftalarmen und sagt keine Angriffe voraus. Der Live-Status kann verspätet oder unvollständig sein. Maßgeblich sind allein die offiziellen Warnungen der ukrainischen Behörden, insbesondere die App „Повітряна тривога“.</p>
+  <p data-i="impN2">Für die Inhalte verlinkter externer Seiten sind ausschließlich deren Betreiber verantwortlich.</p>
+</div>
+
+<!-- DATENSCHUTZ -->
+<div class="view legal" id="v-datenschutz" hidden>
+  <h2 data-i="dsH1">Verantwortlich</h2>
+  <p>Willbrandt und Kompagnon, <span data-i="impOwner">Inh. Mirko Willbrandt</span>, Lindenberger Str. 6, 13059 Berlin, info[at]willbrandt-kompagnon.de</p>
+  <h2 data-i="dsH2">Hosting</h2>
+  <p data-i="dsHost">Die Seite liegt bei GitHub Pages (GitHub, Inc., USA). Beim Aufruf verarbeitet GitHub technisch notwendige Daten wie die IP-Adresse, um die Seite auszuliefern und vor Missbrauch zu schützen (Art. 6 Abs. 1 lit. f DSGVO). GitHub ist unter dem EU-US Data Privacy Framework zertifiziert.</p>
+  <h2 data-i="dsH3">Live-Status</h2>
+  <p data-i="dsLive">Für den Live-Status lädt die Seite alle zwei Minuten eine Datei von api.github.com bzw. raw.githubusercontent.com (ebenfalls GitHub). Dabei wird Ihre IP-Adresse an GitHub übertragen. Es werden keine Angaben über Sie oder Ihren Standort gesendet.</p>
+  <h2 data-i="dsH4">Im Browser gespeichert</h2>
+  <p data-i="dsLocal">Gewählte Sprache und Schriftgröße werden nur auf Ihrem Gerät gespeichert (localStorage). Es gibt keine Cookies, keine Statistik- oder Werbedienste. Schriften werden von dieser Seite selbst geladen, nicht von Google.</p>
+  <h2 data-i="dsH5">Ihre Rechte</h2>
+  <p data-i="dsRights">Sie haben das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Widerspruch sowie Beschwerde bei einer Datenschutz-Aufsichtsbehörde, in Berlin bei der Berliner Beauftragten für Datenschutz und Informationsfreiheit.</p>
+</div>
+
 </div></main>
+
+<footer class="foot gut"><div class="inner">
+  <div class="ft" data-i="footT">Reise nach Tschernihiw</div>
+  <div class="by"><span data-i="footBy">Ein Service von</span> <b>Willbrandt und Kompagnon</b></div>
+  <nav aria-label="Rechtliches"><a href="#impressum" data-i="impT">Impressum</a><span>·</span><a href="#datenschutz" data-i="dsT">Datenschutz</a></nav>
+</div></footer>
 <div class="toast" id="toast" role="status" hidden></div>
 
 <nav class="tabs" aria-label="Navigation"><div class="inner">
@@ -273,6 +314,14 @@ nav.tabs a[aria-current="page"]{color:var(--olive)}
 <script>
 const T={
 de:{
+ footT:"Reise nach Tschernihiw",footBy:"Ein Service von",impT:"Impressum",dsT:"Datenschutz",impH1:"Angaben gemäß §\u00a05 DDG",impOwner:"Inh. Mirko Willbrandt",impFound:"Unternehmen in Gründung",impContact:"Kontakt",impTel:"Telefon",impMail:"E-Mail",impNotes:"Hinweise",
+ impN1:"Diese Seite ist ein unentgeltliches Hilfsangebot für Reisende nach Tschernihiw. Alle Angaben ohne Gewähr. Die Statistik beruht auf vergangenen Luftalarmen und sagt keine Angriffe voraus. Der Live-Status kann verspätet oder unvollständig sein. Maßgeblich sind allein die offiziellen Warnungen der ukrainischen Behörden, insbesondere die App „Повітряна тривога“.",
+ impN2:"Für die Inhalte verlinkter externer Seiten sind ausschließlich deren Betreiber verantwortlich.",
+ dsH1:"Verantwortlich",dsH2:"Hosting",dsH3:"Live-Status",dsH4:"Im Browser gespeichert",dsH5:"Ihre Rechte",
+ dsHost:"Die Seite liegt bei GitHub Pages (GitHub, Inc., USA). Beim Aufruf verarbeitet GitHub technisch notwendige Daten wie die IP-Adresse, um die Seite auszuliefern und vor Missbrauch zu schützen (Art. 6 Abs. 1 lit. f DSGVO). GitHub ist unter dem EU-US Data Privacy Framework zertifiziert.",
+ dsLive:"Für den Live-Status lädt die Seite alle zwei Minuten eine Datei von api.github.com bzw. raw.githubusercontent.com (ebenfalls GitHub). Dabei wird Ihre IP-Adresse an GitHub übertragen. Es werden keine Angaben über Sie oder Ihren Standort gesendet.",
+ dsLocal:"Gewählte Sprache und Schriftgröße werden nur auf Ihrem Gerät gespeichert (localStorage). Es gibt keine Cookies, keine Statistik- oder Werbedienste. Schriften werden von dieser Seite selbst geladen, nicht von Google.",
+ dsRights:"Sie haben das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Widerspruch sowie Beschwerde bei einer Datenschutz-Aufsichtsbehörde, in Berlin bei der Berliner Beauftragten für Datenschutz und Informationsfreiheit.",
  mark1:"Reise nach",mark2:"Tschernihiw",eyebrow:"Berlin · Lwiw · Kyjiw · Чернігів",refresh:"Aktualisieren",
  vLive:"Live",vZeiten:"Zeiten",vRoute:"Route",vRegeln:"Regeln",tLive:"Live",tZeit:"Zeiten",tRoute:"Route",tRules:"Regeln",
  nowLabel:"Stadt Tschernihiw, jetzt",routeNow:"Strecke jetzt",
@@ -317,6 +366,14 @@ de:{
  distSub:{chernihivR:"Stadt Tschernihiw, Koselez, M01; im Norden bis Belarus",nizhyn:"Nischyn, Bobrowyzja; abseits der Grenze",prylutskyi:"Pryluky, Ichnja; Süden",koriukivka:"Korjukiwka, Semeniwka; an der russischen Grenze",novhorod:"Direkt an der russischen Grenze"}
 },
 uk:{
+ footT:"Поїздка до Чернігова",footBy:"Сервіс від",impT:"Імпресум",dsT:"Захист даних",impH1:"Відомості згідно з §\u00a05 DDG (Німеччина)",impOwner:"Власник: Мірко Вільбрандт",impFound:"Підприємство в процесі заснування",impContact:"Контакти",impTel:"Телефон",impMail:"Ел. пошта",impNotes:"Примітки",
+ impN1:"Ця сторінка — безоплатна допомога для тих, хто їде до Чернігова. Усі дані без гарантії. Статистика ґрунтується на минулих тривогах і не передбачає атак. Статус наживо може запізнюватися або бути неповним. Визначальними є лише офіційні попередження українських органів влади, зокрема застосунок «Повітряна тривога».",
+ impN2:"За зміст зовнішніх сайтів, на які ведуть посилання, відповідають виключно їхні власники.",
+ dsH1:"Відповідальна особа",dsH2:"Хостинг",dsH3:"Статус наживо",dsH4:"Збережено в браузері",dsH5:"Ваші права",
+ dsHost:"Сторінка розміщена на GitHub Pages (GitHub, Inc., США). Під час відкриття GitHub обробляє технічно необхідні дані, як-от IP-адресу, щоб показати сторінку і захистити від зловживань (ст. 6 ч. 1 п. f GDPR). GitHub сертифіковано за EU-US Data Privacy Framework.",
+ dsLive:"Для статусу наживо сторінка кожні дві хвилини завантажує файл з api.github.com або raw.githubusercontent.com (теж GitHub). При цьому ваша IP-адреса передається GitHub. Жодних даних про вас чи ваше місцезнаходження не надсилається.",
+ dsLocal:"Обрана мова і розмір шрифту зберігаються лише на вашому пристрої (localStorage). Немає cookies, сервісів статистики чи реклами. Шрифти завантажуються з самої сторінки, не з Google.",
+ dsRights:"Ви маєте право на доступ, виправлення, видалення, обмеження обробки, заперечення, а також на скаргу до органу із захисту даних, у Берліні — до Берлінського уповноваженого із захисту даних і свободи інформації.",
  mark1:"Поїздка до",mark2:"Чернігова",eyebrow:"Берлін · Львів · Київ · Чернігів",refresh:"Оновити",
  vLive:"Зараз",vZeiten:"Час",vRoute:"Маршрут",vRegeln:"Правила",tLive:"Зараз",tZeit:"Час",tRoute:"Маршрут",tRules:"Правила",
  nowLabel:"Місто Чернігів, зараз",routeNow:"Маршрут зараз",
@@ -360,7 +417,7 @@ uk:{
    nizhyn:"Ніжинський район",novhorod:"Новгород-Сіверський район",koriukivka:"Корюківський район",prylutskyi:"Прилуцький район",chernihivR:"Чернігівський район"},
  distSub:{chernihivR:"Чернігів, Козелець, М01; на півночі до білорусі",nizhyn:"Ніжин, Бобровиця; далеко від кордону",prylutskyi:"Прилуки, Ічня; південь",koriukivka:"Корюківка, Семенівка; на кордоні з росією",novhorod:"Безпосередньо на кордоні з росією"}
 }};
-const HERO={live:"vLive",zeiten:"vZeiten",route:"vRoute",regeln:"vRegeln"};
+const HERO={live:"vLive",zeiten:"vZeiten",route:"vRoute",regeln:"vRegeln",impressum:"impT",datenschutz:"dsT"};
 const LIVE_ORDER=["lviv","rivne","zhytomyr","ternopil","khmelnytskyi","vinnytsia","kyivobl","kyiv","brovary","chernihiv_obl"];
 const STAT_AREAS=["chernihiv","brovary","kyiv","kyivobl","lviv","rivne","zhytomyr","ternopil","khmelnytskyi","vinnytsia"];
 const LEGS={
