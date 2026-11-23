@@ -4,7 +4,7 @@
 // Quelle: siren.pp.ua (mit Bezirken und Gemeinden), Ersatz: ubilling.net.ua (nur Oblaste).
 //
 // 24-Stunden-Lage für die Stadt Tschernihiw: Eine Zeitsteuerung (Cron, jede Minute)
-// schreibt Beginn und Ende jedes Alarms in den KV-Speicher "HIST". Ohne KV-Bindung
+// schreibt Beginn und Ende jedes Alarms in den KV-Speicher ("HIST" oder "Ukraine"). Ohne KV-Bindung
 // läuft der Worker trotzdem, nur ohne 24-Stunden-Lage.
 
 // Schwellen aus den offiziellen Alarmdaten der letzten 90 Tage (Alarmstunden in 24 Std.):
@@ -114,9 +114,12 @@ async function getAreas() {
 }
 
 // Verlauf: { start: Beginn der Aufzeichnung, open: Beginn des laufenden Alarms oder null, done: [[von, bis], ...] }
+// KV-Bindung: Name "HIST" oder "Ukraine" (so wurde sie im Dashboard angelegt).
+const kv = (env) => env.HIST || env.Ukraine || null;
+
 async function readHist(env) {
-  if (!env.HIST) return null;
-  return (await env.HIST.get("chernihiv_city", "json")) || { start: Date.now(), open: null, done: [] };
+  if (!kv(env)) return null;
+  return (await kv(env).get("chernihiv_city", "json")) || { start: Date.now(), open: null, done: [] };
 }
 
 async function record(env, area) {
@@ -134,7 +137,7 @@ async function record(env, area) {
   }
   const keep = h.done.filter(([, b]) => b > now - 2 * DAY);
   if (keep.length !== h.done.length) { h.done = keep; changed = true; }
-  if (changed || !(await env.HIST.get("chernihiv_city"))) await env.HIST.put("chernihiv_city", JSON.stringify(h));
+  if (changed || !(await kv(env).get("chernihiv_city"))) await kv(env).put("chernihiv_city", JSON.stringify(h));
 }
 
 function last24(h) {
