@@ -1,5 +1,7 @@
 name: Live-Alarmstatus
 
+# Ersatzquelle für die Seite. Hauptquelle ist der Cloudflare Worker (tools/worker.js).
+
 on:
   schedule:
     - cron: "2-59/5 * * * *"
@@ -7,7 +9,6 @@ on:
 
 permissions:
   contents: write
-  actions: write
 
 concurrency:
   group: live-status
@@ -29,15 +30,3 @@ jobs:
           git add live.json
           git -c user.name="github-actions" -c user.email="github-actions@users.noreply.github.com" commit -q -m "Live-Status"
           git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" live
-      - name: Wächter - Dauerlauf neu starten, falls er nicht läuft
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          active=$(gh api "repos/${{ github.repository }}/actions/workflows/live-loop.yml/runs?per_page=5" \
-            --jq '[.workflow_runs[] | select(.status=="in_progress" or .status=="queued" or .status=="waiting" or .status=="pending")] | length')
-          if [ "$active" = "0" ]; then
-            echo "Dauerlauf läuft nicht, starte ihn neu"
-            gh workflow run live-loop.yml -R "${{ github.repository }}" --ref main -f minutes=330
-          else
-            echo "Dauerlauf läuft ($active)"
-          fi

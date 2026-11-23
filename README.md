@@ -13,7 +13,12 @@ Läuft über GitHub Pages: https://mirkowill.github.io/ukraine/
 
 ## Wie der Live-Status funktioniert
 
-Die Alarm-Schnittstellen erlauben keinen direkten Abruf aus dem Browser. Die GitHub Action `.github/workflows/live.yml` ruft daher etwa alle 5 Minuten `tools/live.py` auf (Quelle: siren.pp.ua, Ersatz: ubilling.net.ua) und legt das Ergebnis als `live.json` auf dem Branch `live` ab. Die Seite liest diese Datei. GitHub führt geplante Actions manchmal verspätet aus; die Seite zeigt deshalb immer, wie alt der Stand ist.
+Die Alarm-Schnittstellen erlauben keinen direkten Abruf aus dem Browser. Deshalb:
+
+1. **Hauptquelle:** ein Cloudflare Worker (`tools/worker.js`) unter https://ukraine-alarm.plain-paper-0d28.workers.dev/. Er fragt siren.pp.ua (Ersatz: ubilling.net.ua) und gibt den Status mit CORS-Header an die Seite weiter. Änderungen am Code: in Cloudflare unter Workers & Pages → ukraine-alarm → Edit code einfügen und Deploy.
+2. **Ersatz:** die GitHub Action `.github/workflows/live.yml` legt etwa alle 5 Minuten `live.json` auf dem Branch `live` ab. GitHub startet geplante Läufe oft verspätet.
+
+Die Seite fragt zuerst den Worker und nimmt nach 8 Sekunden ohne Antwort die GitHub-Datei. Sie zeigt immer, wie alt der Stand ist.
 
 ## Statistik aktualisieren
 
