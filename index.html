@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#f6f6f3">
-<title>Поїздка до Чернігова</title>
+<title>Безпечно в Чернігові</title>
 
 
 <link rel="stylesheet" href="fonts/fonts.css">
@@ -131,6 +131,7 @@ table.heat td{width:24px;min-width:24px;height:24px;border-radius:4px;text-align
 .km{font-weight:700;font-variant-numeric:tabular-nums;width:78px;flex:none}
 .cc{font-size:.75rem;font-weight:700;letter-spacing:.06em;border-radius:999px;padding:2px 8px;border:1.5px solid currentColor}
 .cc.ua{color:var(--bad)} .cc.pl,.cc.de{color:var(--ok)}
+.em{font-size:1.6rem;font-weight:700;color:var(--bad);text-decoration:none;min-width:64px;font-variant-numeric:tabular-nums}
 .flag{display:inline-block;font-size:.78rem;font-weight:700;color:var(--bad);margin-left:6px}
 
 ul.rules{margin:0;padding-left:1.15em;display:flex;flex-direction:column;gap:9px}
@@ -201,7 +202,7 @@ nav.tabs a[aria-current="page"]{color:var(--olive)}
   <div class="card">
     <h3 data-i="routeNow">Strecke jetzt</h3>
     <div class="list" id="liveList"></div>
-    <p class="small muted" data-i="liveNote">Grün: kein Alarm. Gelb: Alarm nur in einzelnen Bezirken der Oblast. Rot: Alarm. Wird etwa alle 5 Minuten aktualisiert und kann einige Minuten hinterherhinken.</p>
+    <p class="small muted" data-i="liveNote">Grün: kein Alarm. Gelb: Alarm nur in einzelnen Bezirken der Oblast. Rot: Alarm. Wird etwa jede Minute aktualisiert und kann kurz hinterherhinken.</p>
   </div>
   <div class="notice"><b data-i="appWarnT">Unterwegs zählt die offizielle App.</b> <span data-i="appWarn">Diese Seite kann verspätet sein. Die App „Повітряна тривога“ mit Ton warnt sofort.</span></div>
   <h2 class="sec" data-i="linksT">Live-Quellen</h2>
@@ -257,18 +258,44 @@ nav.tabs a[aria-current="page"]{color:var(--olive)}
   <h2 class="sec" data-i="wayT">Der Weg</h2>
   <div class="card steps" id="steps"></div>
 
+</div>
+
+<!-- VOR ORT -->
+<div class="view" id="v-vorort" hidden>
+  <div class="card stripe bad">
+    <h3 data-i="emT">Notrufnummern</h3>
+    <div class="list" id="emList"></div>
+    <p class="small muted" data-i="emNote">Kostenlos, auch ohne Guthaben. Die Nummer zeigen, falls der Link nicht wählt.</p>
+  </div>
+  <div class="card stripe bad">
+    <h3 data-i="mineT">Minen und Blindgänger</h3>
+    <p data-i="mine"></p>
+  </div>
+  <div class="card">
+    <h3 data-i="homeT">Zu Hause bei Alarm</h3>
+    <ul class="rules" data-list="home"></ul>
+  </div>
+  <div class="card">
+    <h3 data-i="afterT">Nach einem Einschlag</h3>
+    <ul class="rules" data-list="after"></ul>
+  </div>
+  <div class="card">
+    <h3 data-i="powerT">Strom und Vorrat</h3>
+    <ul class="rules" data-list="power"></ul>
+  </div>
   <h2 class="sec" data-i="distT">Bezirke der Oblast Tschernihiw</h2>
   <div class="card list" id="dist"></div>
   <div class="card stripe bad">
-    <h3 data-i="avoidT">Nicht fahren</h3>
-    <p data-i="avoid">Straßen im Grenzstreifen zu Russland und Belarus, besonders um Nowhorod-Siwerskyj, Semeniwka, Korjukiwka-Nord, Horodnja und Ripky. Dort gibt es Beschuss und Angriffe mit FPV-Drohnen auf Fahrzeuge, auch tagsüber. Keine Abkürzungen über Nebenstraßen nach Norden oder Osten.</p>
+    <h3 data-i="avoidT">Nicht hinfahren</h3>
+    <p data-i="avoid"></p>
   </div>
+  <div><a class="btn" href="#route" data-i="returnLink">Rückreise planen</a></div>
 </div>
 
 <!-- REGELN -->
 <div class="view" id="v-regeln" hidden>
   <div class="card">
-    <h3 data-i="beforeT">Vor der Fahrt</h3>
+    <h3 data-i="beforeT">Allgemein</h3>
     <ul class="rules" data-list="before"></ul>
   </div>
   <div class="card stripe bad">
@@ -319,14 +346,14 @@ nav.tabs a[aria-current="page"]{color:var(--olive)}
 <nav class="tabs" aria-label="Navigation"><div class="inner">
   <a href="#live" data-v="live"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10 21a2 2 0 0 0 4 0"/></svg><span data-i="tLive">Live</span></a>
   <a href="#zeiten" data-v="zeiten"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 20V12M10 20V6M15 20v-9M20 20V9"/></svg><span data-i="tZeit">Zeiten</span></a>
-  <a href="#route" data-v="route"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 19h8a3 3 0 0 0 0-6H8a3 3 0 0 1 0-6h8"/></svg><span data-i="tRoute">Route</span></a>
+  <a href="#vorort" data-v="vorort"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 11 12 4l9 7M5 10v10h5v-6h4v6h5V10"/></svg><span data-i="tOrt">Vor Ort</span></a>
   <a href="#regeln" data-v="regeln"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6l-8-3z"/></svg><span data-i="tRules">Regeln</span></a>
 </div></nav>
 
 <script>
 const T={
 de:{
- footT:"Reise nach Tschernihiw",footBy:"Ein Service von",impT:"Impressum",dsT:"Datenschutz",impH1:"Angaben gemäß §\u00a05 DDG",impOwner:"Inh. Mirko Willbrandt",impFound:"Unternehmen in Gründung",impContact:"Kontakt",impTel:"Telefon",impMail:"E-Mail",impNotes:"Hinweise",
+ footT:"Sicher in Tschernihiw",footBy:"Ein Service von",impT:"Impressum",dsT:"Datenschutz",impH1:"Angaben gemäß §\u00a05 DDG",impOwner:"Inh. Mirko Willbrandt",impFound:"Unternehmen in Gründung",impContact:"Kontakt",impTel:"Telefon",impMail:"E-Mail",impNotes:"Hinweise",
  impN1:"Diese Seite ist ein unentgeltliches Hilfsangebot für Reisende nach Tschernihiw. Alle Angaben ohne Gewähr. Die Statistik beruht auf vergangenen Luftalarmen und sagt keine Angriffe voraus. Der Live-Status kann verspätet oder unvollständig sein. Maßgeblich sind allein die offiziellen Warnungen der ukrainischen Behörden, insbesondere die App „Повітряна тривога“.",
  impN2:"Für die Inhalte verlinkter externer Seiten sind ausschließlich deren Betreiber verantwortlich.",
  dsH1:"Verantwortlich",dsH2:"Hosting",dsH3:"Live-Status",dsH4:"Im Browser gespeichert",dsH5:"Ihre Rechte",
@@ -334,13 +361,13 @@ de:{
  dsLive:"Für den Live-Status lädt die Seite alle zwei Minuten eine Datei von api.github.com bzw. raw.githubusercontent.com (ebenfalls GitHub). Dabei wird Ihre IP-Adresse an GitHub übertragen. Es werden keine Angaben über Sie oder Ihren Standort gesendet.",
  dsLocal:"Gewählte Sprache und Schriftgröße werden nur auf Ihrem Gerät gespeichert (localStorage). Es gibt keine Cookies, keine Statistik- oder Werbedienste. Schriften werden von dieser Seite selbst geladen, nicht von Google.",
  dsRights:"Sie haben das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Widerspruch sowie Beschwerde bei einer Datenschutz-Aufsichtsbehörde, in Berlin bei der Berliner Beauftragten für Datenschutz und Informationsfreiheit.",
- mark1:"Reise nach",mark2:"Tschernihiw",eyebrow:"Berlin · Lwiw · Kyjiw · Чернігів",refresh:"Aktualisieren",
+ mark1:"Sicher in",mark2:"Tschernihiw",eyebrow:"Чернігів · Чернігівська область",vOrt:"Vor Ort",tOrt:"Vor Ort",returnLink:"Rückreise planen",refresh:"Aktualisieren",
  vLive:"Live",vZeiten:"Zeiten",vRoute:"Route",vRegeln:"Regeln",tLive:"Live",tZeit:"Zeiten",tRoute:"Route",tRules:"Regeln",
- nowLabel:"Stadt Tschernihiw, jetzt",routeNow:"Strecke jetzt",
- liveNote:"Grün: kein Alarm. Gelb: Alarm nur in einzelnen Bezirken der Oblast. Rot: Alarm. Wird etwa alle 5 Minuten aktualisiert und kann einige Minuten hinterherhinken.",
- appWarnT:"Unterwegs zählt die offizielle App.",appWarn:"Diese Seite kann verspätet sein. Die App „Повітряна тривога“ mit Ton warnt sofort.",
+ nowLabel:"Stadt Tschernihiw, jetzt",routeNow:"Umgebung jetzt",
+ liveNote:"Grün: kein Alarm. Gelb: Alarm nur in einzelnen Bezirken der Oblast. Rot: Alarm. Wird etwa jede Minute aktualisiert und kann kurz hinterherhinken.",
+ appWarnT:"Maßgeblich ist die offizielle App.",appWarn:"Diese Seite kann verspätet sein. Die App „Повітряна тривога“ mit Ton warnt sofort.",
  linksT:"Live-Quellen",l1:"Karte aller Alarme nach Bezirk",l2:"Offizielle Alarm-App mit Ton",l3:"Staatliche Alarm-Karte",l4:"Frontverlauf und Grenzgebiete",
- subscribe:"In der App Чернігів, Київ und Броварський район abonnieren, auf der Fahrt zusätzlich die Oblaste der Strecke. In Telegram den Kanal „Чернігівська ОВА“ suchen.",
+ subscribe:"In der App „Повітряна тривога“ Чернігів abonnieren, für die Familie in Deutschland wichtig: Ton an lassen. In Telegram den Kanal „Чернігівська ОВА“ abonnieren, dort stehen Meldungen zu Angriffen und Abschaltungen.",
  stAlert:"Luftalarm",stPartial:"Alarm in Teilen der Oblast",stClear:"Kein Alarm",stUnknown:"Status unbekannt",
  since:"seit",stand:"Stand",updatedNow:"Aktualisiert · Stand {s}",ago:"vor {n} Min.",loading:"wird geladen …",stale:"Daten älter als 20 Minuten. Bitte die App nutzen.",
  dayLabel:"Tschernihiw, letzte 24 Stunden",dayQuiet:"ruhig",dayNormal:"normal",dayBusy:"unruhig",dayCollect:"wird gesammelt",
@@ -362,8 +389,8 @@ de:{
  best:"Beste Abfahrt: {h} (Ø {p} %)",change:"Umstieg in Kyjiw",
  kmT:"Kilometer",kmNote:"Straßenkilometer nach OpenStreetMap. Fahrzeiten ohne Pausen und ohne Wartezeit an der Grenze.",kmTot:"km von Wartenberg bis Tschernihiw",kmSub:"{a} km bis zur ukrainischen Grenze · reine Fahrzeit etwa {h} Std.",border:"Grenze",zoneUA:"Alarmgebiet",
  wayT:"Der Weg",distT:"Bezirke der Oblast Tschernihiw",alarmShare:"der Zeit unter Alarm",
- avoidT:"Nicht fahren",
- avoid:"Straßen im Grenzstreifen zu Russland und Belarus, besonders um Nowhorod-Siwerskyj, Semeniwka, Korjukiwka-Nord, Horodnja und Ripky. Dort gibt es Beschuss und Angriffe mit FPV-Drohnen auf Fahrzeuge, auch tagsüber. Keine Abkürzungen über Nebenstraßen nach Norden oder Osten.",
+ avoidT:"Nicht hinfahren",
+ avoid:"In den Grenzstreifen zu Russland und Belarus, besonders um Nowhorod-Siwerskyj, Semeniwka, Korjukiwka-Nord, Horodnja und Ripky. Dort gibt es Beschuss und Angriffe mit FPV-Drohnen auf Fahrzeuge, auch tagsüber. Ausflüge nur in Richtung Süden oder Kyjiw.",
  steps:[
   ["Wartenberg → Grenze Forst","Über die A10, A13 und A15 an Cottbus vorbei zur Grenze bei Forst/Olszyna, 190 km. In Polen auf der A18 bis Krzyżowa, dann die A4 über Wrocław, Katowice, Kraków und Rzeszów bis Korczowa. In Polen gibt es keinen Luftalarm. Polen hat die Berliner Zeit."],
   ["Grenze Korczowa → Krakiwez","Grenzübergang für Autos nach 897 km, Wartezeiten vorher prüfen (Links unten). Danach 80 km auf der M10 nach Lwiw. Ab der Grenze gilt Kyjiwer Zeit, die Uhr eine Stunde vorstellen."],
@@ -373,16 +400,26 @@ de:{
   ["Kyjiw → Tschernihiw","Zug ab Kyjiw-Passaschyrskyj oder Auto über die M01 durch Browary und Koselez (etwa 145 km, 2 Std.). Am besten zwischen 10 und 17 Uhr."]
  ],
  borderLinks:"Wartezeiten an der Grenze:",
- before:["Ausgangssperre: in Kyjiw und der Oblast Tschernihiw derzeit meist 00:00–05:00. Vor der Fahrt prüfen.","Die letzte Etappe Kyjiw → Tschernihiw tagsüber fahren, ideal 10–17 Uhr.","Handy geladen, Powerbank, Offline-Karte der Strecke heruntergeladen.","Pass griffbereit für Kontrollposten. Etwas Bargeld in Hrywnja für Stromausfälle.","Standort teilen und feste Zeiten für eine kurze Nachricht ausmachen."],
- alarm:["Im Ort: in den nächsten Schutzraum (укриття), eine Metro-Station oder Unterführung. Die App zeigt Schutzräume.","Auf der Straße: nicht an Brücken, Tankstellen, Umspannwerken oder neben Militärfahrzeugen halten. Mit Abstand anhalten, aussteigen, flach in einen Graben oder hinter eine Böschung legen.","Im Zug: den Anweisungen des Personals folgen, weg von den Fenstern.","Keine Einschläge, Soldaten oder Kontrollposten filmen oder posten. Das ist verboten.","Nach der Entwarnung noch einige Minuten warten; oft kommt eine zweite Welle."],
- wordsT:"Wichtige Wörter",
+ before:["Ausgangssperre in der Oblast Tschernihiw: derzeit meist 00:00–05:00 Uhr. Bei der Gemeinde oder in Telegram („Чернігівська ОВА“) prüfen, sie kann sich ändern.","Pass immer dabei haben. Kontrollen in der Stadt sind normal.","Jeden Tag kurz melden, zum Beispiel morgens und abends, und den Standort teilen.","Handy nachts laden und die App „Повітряна тривога“ mit Ton eingeschaltet lassen.","Nichts filmen oder posten, was Einschläge, Soldaten, Kontrollposten oder Infrastruktur zeigt."],
+ alarm:["Draußen: in den nächsten Schutzraum (укриття) oder eine Unterführung. Die App „Повітряна тривога“ zeigt Schutzräume in der Nähe.","Kein Schutzraum erreichbar: weg von Fenstern, Glas und Autos, in einen Hauseingang oder flach auf den Boden neben einer Mauer.","Nicht stehen bleiben und schauen, nicht filmen.","Nach der Entwarnung noch einige Minuten warten; oft kommt eine zweite Welle."],
+ beforeT:"Allgemein",alarmT:"Bei Alarm unterwegs in der Stadt",wordsT:"Wichtige Wörter",
+ emT:"Notrufnummern",emNote:"Kostenlos, auch ohne Guthaben. Falls Antippen nicht wählt: Nummer selbst eintippen.",
+ em:[["101","Feuerwehr und Rettung (ДСНС)"],["102","Polizei"],["103","Rettungsdienst / Notarzt"],["104","Gas-Notdienst"],["112","Allgemeiner Notruf"]],
+ mineT:"Minen und Blindgänger",
+ mine:"Um Tschernihiw wurde 2022 gekämpft. In Wäldern, auf Feldern, an Wegrändern und in zerstörten Gebäuden können noch Minen und Blindgänger liegen. Nur auf befestigten Wegen und Straßen gehen, nicht in den Wald oder aufs Feld, nichts Unbekanntes anfassen. Verdächtige Gegenstände mit Abstand unter 101 melden.",
+ homeT:"Zu Hause bei Alarm",
+ home:["Regel der zwei Wände: in einen Raum gehen, bei dem zwischen dir und draußen mindestens zwei Wände liegen, oft Flur oder Bad. Weg von Fenstern.","Bei Raketen oder Drohnen in der Nähe (Hinweis in der App oder bei Explosionen) in den Keller oder den nächsten Schutzraum gehen.","Notfalltasche griffbereit: Pass, Medikamente, Wasser, Powerbank, Taschenlampe, warme Kleidung.","Vorhänge zuziehen, das hält Glassplitter etwas ab."],
+ afterT:"Nach einem Einschlag",
+ after:["Nicht hingehen und nicht schauen. Oft folgt ein zweiter Schlag auf dieselbe Stelle.","Bei Verletzten 103 anrufen, bei Feuer oder Trümmern 101.","Keine Fotos oder Videos veröffentlichen. Das ist verboten und hilft dem Gegner.","Sich kurz bei der Familie melden, dass alles in Ordnung ist."],
+ powerT:"Strom und Vorrat",
+ power:["Geplante Stromabschaltungen sind möglich. Die Zeiten veröffentlicht der Netzbetreiber „Чернігівобленерго“ auf seiner Seite und in Telegram.","Powerbanks immer geladen halten, dazu Taschenlampe und Batterien.","Wasser für 2–3 Tage, haltbare Lebensmittel, Bargeld in Hrywnja.","Bei längeren Ausfällen bieten „Пункти незламності“ Wärme, Strom und Internet. Die Standorte stehen u. a. in der App „Дія“.","Im Winter: warme Decken bereithalten, den Gasherd nie zum Heizen benutzen."],
  words:[["Повітряна тривога","Luftalarm"],["Відбій тривоги","Entwarnung"],["Укриття","Schutzraum"],["Комендантська година","Ausgangssperre"],["Блокпост","Kontrollposten"]],
  areas:{chernihiv:"Tschernihiw",brovary:"Browary (M01)",kyiv:"Kyjiw Stadt",kyivobl:"Oblast Kyjiw (West)",lviv:"Oblast Lwiw",rivne:"Oblast Riwne",zhytomyr:"Oblast Schytomyr",ternopil:"Oblast Ternopil",khmelnytskyi:"Oblast Chmelnyzkyj",vinnytsia:"Oblast Winnyzja",chernihiv_obl:"Oblast Tschernihiw",chernihiv_city:"Stadt Tschernihiw",
    nizhyn:"Bezirk Nischyn",novhorod:"Bezirk Nowhorod-Siwerskyj",koriukivka:"Bezirk Korjukiwka",prylutskyi:"Bezirk Pryluky",chernihivR:"Bezirk Tschernihiw"},
  distSub:{chernihivR:"Stadt Tschernihiw, Koselez, M01; im Norden bis Belarus",nizhyn:"Nischyn, Bobrowyzja; abseits der Grenze",prylutskyi:"Pryluky, Ichnja; Süden",koriukivka:"Korjukiwka, Semeniwka; an der russischen Grenze",novhorod:"Direkt an der russischen Grenze"}
 },
 uk:{
- footT:"Поїздка до Чернігова",footBy:"Сервіс від",impT:"Імпресум",dsT:"Захист даних",impH1:"Відомості згідно з §\u00a05 DDG (Німеччина)",impOwner:"Власник: Мірко Вільбрандт",impFound:"Підприємство в процесі заснування",impContact:"Контакти",impTel:"Телефон",impMail:"Ел. пошта",impNotes:"Примітки",
+ footT:"Безпечно в Чернігові",footBy:"Сервіс від",impT:"Імпресум",dsT:"Захист даних",impH1:"Відомості згідно з §\u00a05 DDG (Німеччина)",impOwner:"Власник: Мірко Вільбрандт",impFound:"Підприємство в процесі заснування",impContact:"Контакти",impTel:"Телефон",impMail:"Ел. пошта",impNotes:"Примітки",
  impN1:"Ця сторінка — безоплатна допомога для тих, хто їде до Чернігова. Усі дані без гарантії. Статистика ґрунтується на минулих тривогах і не передбачає атак. Статус наживо може запізнюватися або бути неповним. Визначальними є лише офіційні попередження українських органів влади, зокрема застосунок «Повітряна тривога».",
  impN2:"За зміст зовнішніх сайтів, на які ведуть посилання, відповідають виключно їхні власники.",
  dsH1:"Відповідальна особа",dsH2:"Хостинг",dsH3:"Статус наживо",dsH4:"Збережено в браузері",dsH5:"Ваші права",
@@ -390,13 +427,13 @@ uk:{
  dsLive:"Для статусу наживо сторінка кожні дві хвилини завантажує файл з api.github.com або raw.githubusercontent.com (теж GitHub). При цьому ваша IP-адреса передається GitHub. Жодних даних про вас чи ваше місцезнаходження не надсилається.",
  dsLocal:"Обрана мова і розмір шрифту зберігаються лише на вашому пристрої (localStorage). Немає cookies, сервісів статистики чи реклами. Шрифти завантажуються з самої сторінки, не з Google.",
  dsRights:"Ви маєте право на доступ, виправлення, видалення, обмеження обробки, заперечення, а також на скаргу до органу із захисту даних, у Берліні — до Берлінського уповноваженого із захисту даних і свободи інформації.",
- mark1:"Поїздка до",mark2:"Чернігова",eyebrow:"Берлін · Львів · Київ · Чернігів",refresh:"Оновити",
+ mark1:"Безпечно в",mark2:"Чернігові",eyebrow:"Чернігів · Чернігівська область",vOrt:"На місці",tOrt:"На місці",returnLink:"Планувати повернення",refresh:"Оновити",
  vLive:"Зараз",vZeiten:"Час",vRoute:"Маршрут",vRegeln:"Правила",tLive:"Зараз",tZeit:"Час",tRoute:"Маршрут",tRules:"Правила",
- nowLabel:"Місто Чернігів, зараз",routeNow:"Маршрут зараз",
- liveNote:"Зелений: тривоги немає. Жовтий: тривога лише в окремих районах області. Червоний: тривога. Оновлюється приблизно кожні 5 хвилин і може запізнюватися на кілька хвилин.",
- appWarnT:"У дорозі головне — офіційний застосунок.",appWarn:"Ця сторінка може запізнюватися. Застосунок «Повітряна тривога» зі звуком попереджає одразу.",
+ nowLabel:"Місто Чернігів, зараз",routeNow:"Довкола зараз",
+ liveNote:"Зелений: тривоги немає. Жовтий: тривога лише в окремих районах області. Червоний: тривога. Оновлюється приблизно щохвилини і може трохи запізнюватися.",
+ appWarnT:"Головне — офіційний застосунок.",appWarn:"Ця сторінка може запізнюватися. Застосунок «Повітряна тривога» зі звуком попереджає одразу.",
  linksT:"Джерела наживо",l1:"Мапа всіх тривог за районами",l2:"Офіційний застосунок зі звуком",l3:"Державна мапа тривог",l4:"Лінія фронту і прикордоння",
- subscribe:"У застосунку підпишіться на Чернігів, Київ і Броварський район, у дорозі також на області маршруту. У Telegram знайдіть канал «Чернігівська ОВА».",
+ subscribe:"У застосунку «Повітряна тривога» підпишіться на Чернігів і тримайте звук увімкненим. У Telegram підпишіться на канал «Чернігівська ОВА» — там новини про атаки й відключення.",
  stAlert:"Повітряна тривога",stPartial:"Тривога в частині області",stClear:"Тривоги немає",stUnknown:"Статус невідомий",
  since:"з",stand:"Станом на",updatedNow:"Оновлено · станом на {s}",ago:"{n} хв тому",loading:"завантаження …",stale:"Дані старші за 20 хвилин. Користуйтеся застосунком.",
  dayLabel:"Чернігів, останні 24 години",dayQuiet:"спокійно",dayNormal:"звично",dayBusy:"неспокійно",dayCollect:"збираємо дані",
@@ -418,8 +455,8 @@ uk:{
  best:"Найкращий виїзд: {h} (Ø {p} %)",change:"Пересадка в Києві",
  kmT:"Кілометри",kmNote:"Кілометри доріг за OpenStreetMap. Час у дорозі без зупинок і без очікування на кордоні.",kmTot:"км від Вартенберга до Чернігова",kmSub:"{a} км до українського кордону · чистий час у дорозі приблизно {h} год",border:"Кордон",zoneUA:"Зона тривог",
  wayT:"Шлях",distT:"Райони Чернігівської області",alarmShare:"часу під тривогою",
- avoidT:"Не їхати",
- avoid:"Дороги в прикордонній смузі з росією та білоруссю, особливо біля Новгорода-Сіверського, Семенівки, півночі Корюківщини, Городні та Ріпок. Там обстріли та атаки FPV-дронів на автомобілі, навіть удень. Не скорочуйте шлях бічними дорогами на північ чи схід.",
+ avoidT:"Не їздити",
+ avoid:"У прикордонну смугу з росією та білоруссю, особливо біля Новгорода-Сіверського, Семенівки, півночі Корюківщини, Городні та Ріпок. Там обстріли та атаки FPV-дронів на автомобілі, навіть удень. Поїздки — лише в бік півдня або Києва.",
  steps:[
   ["Вартенберг → кордон Форст","Трасами A10, A13 і A15 повз Котбус до кордону біля Форста/Ольшини, 190 км. У Польщі трасою A18 до Кшижової, далі A4 через Вроцлав, Катовіце, Краків і Ряшів до Корчови. У Польщі тривог немає. У Польщі берлінський час."],
   ["Кордон Корчова → Краковець","Пункт пропуску для авто після 897 км, черги перевірте заздалегідь (посилання нижче). Далі 80 км трасою М10 до Львова. Після кордону київський час, переведіть годинник на годину вперед."],
@@ -429,17 +466,27 @@ uk:{
   ["Київ → Чернігів","Потягом з Києва-Пасажирського або авто трасою М01 через Бровари й Козелець (приблизно 145 км, 2 год). Найкраще між 10 і 17 годиною."]
  ],
  borderLinks:"Черги на кордоні:",
- before:["Комендантська година: у Києві та Чернігівській області зараз здебільшого 00:00–05:00. Перевірте перед поїздкою.","Останній відрізок Київ → Чернігів їдьте вдень, найкраще 10–17.","Заряджений телефон, павербанк, офлайн-мапа маршруту.","Паспорт під рукою для блокпостів. Трохи готівки в гривнях на випадок відключень світла.","Діліться геолокацією і домовтеся про час коротких повідомлень."],
- alarm:["У місті: до найближчого укриття, станції метро чи підземного переходу. Застосунок показує укриття.","На дорозі: не зупиняйтеся біля мостів, АЗС, підстанцій чи військової техніки. Зупиніться на відстані, вийдіть, ляжте в кювет або за насип.","У потязі: виконуйте вказівки провідників, тримайтеся подалі від вікон.","Не знімайте і не публікуйте влучання, військових чи блокпости. Це заборонено.","Після відбою зачекайте ще кілька хвилин; часто буває друга хвиля."],
- wordsT:"Важливі слова",
+ before:["Комендантська година в Чернігівській області: зараз здебільшого 00:00–05:00. Перевіряйте в громаді або в Telegram («Чернігівська ОВА»), вона може змінюватися.","Завжди майте при собі паспорт. Перевірки в місті — звичайна справа.","Щодня коротко виходьте на зв'язок, наприклад зранку й увечері, діліться геолокацією.","Заряджайте телефон уночі й тримайте застосунок «Повітряна тривога» зі звуком.","Не знімайте й не публікуйте влучання, військових, блокпости чи інфраструктуру."],
+ alarm:["Надворі: до найближчого укриття або підземного переходу. Застосунок «Повітряна тривога» показує укриття поруч.","Укриття недоступне: подалі від вікон, скла й автомобілів, у під'їзд або лягти на землю біля стіни.","Не зупиняйтеся подивитися, не знімайте.","Після відбою зачекайте ще кілька хвилин; часто буває друга хвиля."],
+ beforeT:"Загальне",alarmT:"Тривога, коли ви в місті",wordsT:"Важливі слова",
+ emT:"Екстрені номери",emNote:"Безкоштовно, навіть без коштів на рахунку. Якщо дотик не набирає — наберіть номер вручну.",
+ em:[["101","Пожежна та рятувальники (ДСНС)"],["102","Поліція"],["103","Швидка допомога"],["104","Аварійна газова служба"],["112","Єдиний номер екстрених служб"]],
+ mineT:"Міни та вибухонебезпечні предмети",
+ mine:"Навколо Чернігова у 2022 році точилися бої. У лісах, на полях, узбіччях і в зруйнованих будівлях можуть бути міни та нерозірвані боєприпаси. Ходіть лише твердими дорогами й тротуарами, не заходьте в ліс і на поля, нічого незнайомого не торкайтеся. Про підозрілі предмети повідомляйте за номером 101, тримаючись на відстані.",
+ homeT:"Вдома під час тривоги",
+ home:["Правило двох стін: перейдіть у приміщення, де між вами й вулицею щонайменше дві стіни, часто коридор або ванна. Подалі від вікон.","Якщо ракети чи дрони поруч (повідомлення в застосунку або вибухи) — у підвал чи найближче укриття.","Тривожна валіза під рукою: паспорт, ліки, вода, павербанк, ліхтарик, теплий одяг.","Засуньте штори — це трохи захищає від уламків скла."],
+ afterT:"Після влучання",
+ after:["Не підходьте й не дивіться. Часто буває повторний удар по тому самому місцю.","Є постраждалі — дзвоніть 103, пожежа чи завали — 101.","Не публікуйте фото й відео. Це заборонено і допомагає ворогу.","Коротко повідомте родину, що все гаразд."],
+ powerT:"Світло і запаси",
+ power:["Можливі планові відключення світла. Графіки публікує «Чернігівобленерго» на своєму сайті та в Telegram.","Тримайте павербанки зарядженими, а також ліхтарик і батарейки.","Вода на 2–3 дні, продукти тривалого зберігання, готівка в гривнях.","Під час тривалих відключень «Пункти незламності» дають тепло, світло та інтернет. Адреси є, зокрема, в застосунку «Дія».","Взимку: теплі ковдри напоготові, ніколи не обігрівайтеся газовою плитою."],
  words:[["Повітряна тривога","Luftalarm"],["Відбій тривоги","Entwarnung"],["Укриття","Schutzraum"],["Комендантська година","Ausgangssperre"],["Блокпост","Kontrollposten"]],
  areas:{chernihiv:"Чернігів",brovary:"Бровари (М01)",kyiv:"м. Київ",kyivobl:"Київська обл. (захід)",lviv:"Львівська обл.",rivne:"Рівненська обл.",zhytomyr:"Житомирська обл.",ternopil:"Тернопільська обл.",khmelnytskyi:"Хмельницька обл.",vinnytsia:"Вінницька обл.",chernihiv_obl:"Чернігівська обл.",chernihiv_city:"м. Чернігів",
    nizhyn:"Ніжинський район",novhorod:"Новгород-Сіверський район",koriukivka:"Корюківський район",prylutskyi:"Прилуцький район",chernihivR:"Чернігівський район"},
  distSub:{chernihivR:"Чернігів, Козелець, М01; на півночі до білорусі",nizhyn:"Ніжин, Бобровиця; далеко від кордону",prylutskyi:"Прилуки, Ічня; південь",koriukivka:"Корюківка, Семенівка; на кордоні з росією",novhorod:"Безпосередньо на кордоні з росією"}
 }};
-const HERO={live:"vLive",zeiten:"vZeiten",route:"vRoute",regeln:"vRegeln",impressum:"impT",datenschutz:"dsT"};
-const LIVE_ORDER=["lviv","rivne","zhytomyr","ternopil","khmelnytskyi","vinnytsia","kyivobl","kyiv","brovary","chernihiv_obl"];
-const STAT_AREAS=["chernihiv","brovary","kyiv","kyivobl","lviv","rivne","zhytomyr","ternopil","khmelnytskyi","vinnytsia"];
+const HERO={live:"vLive",zeiten:"vZeiten",vorort:"vOrt",route:"vRoute",regeln:"vRegeln",impressum:"impT",datenschutz:"dsT"};
+const LIVE_ORDER=["chernihiv_obl","brovary","kyiv"]; // Reise: ["lviv","rivne","zhytomyr","ternopil","khmelnytskyi","vinnytsia","kyivobl","kyiv","brovary","chernihiv_obl"]
+const STAT_AREAS=["chernihiv","kyiv","brovary"];
 const LEGS={
  car:[["lviv",1.5],["rivne",2],["zhytomyr",2.5],["kyivobl",1],["kyiv",.75],["brovary",.75],["chernihiv",1.25]],
  train:[["lviv",1],["ternopil",1.5],["khmelnytskyi",1.5],["vinnytsia",1.5],["kyivobl",1.25],["kyiv",1.5,"change"],["brovary",.75],["chernihiv",1.25]]
@@ -478,6 +525,7 @@ function applyText(){
   document.querySelectorAll("[data-i]").forEach(el=>{const v=t(el.dataset.i);if(typeof v==="string")el.textContent=v});
   document.querySelectorAll("[data-list]").forEach(ul=>{ul.innerHTML=t(ul.dataset.list).map(x=>`<li>${x}</li>`).join("")});
   $("langLbl").textContent=lang==="uk"?"UA":"DE";$("heroRefresh").setAttribute("aria-label",t("refresh"));$("heroRefresh").title=t("refresh");
+  $("emList").innerHTML=t("em").map(([n,d])=>`<div class="row"><a class="em" href="tel:${n}">${n}</a><div class="grow"><div class="name">${d}</div></div></div>`).join("");
   $("words").innerHTML=t("words").map(([u,d])=>`<div class="row"><div class="grow"><div class="name">${u}</div><div class="sub">${lang==="uk"?d+" (нім.)":d}</div></div></div>`).join("");
   $("heroTitle").textContent=t(HERO[view]);
 }
@@ -485,7 +533,7 @@ function applyText(){
 function route(){
   const v=(location.hash||"#live").slice(1);view=HERO[v]?v:"live";
   for(const k in HERO)$("v-"+k).hidden=k!==view;
-  document.querySelectorAll("nav.tabs a").forEach(a=>{if(a.dataset.v===view)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
+  document.querySelectorAll("nav.tabs a").forEach(a=>{if(a.dataset.v===(view==="route"?"vorort":view))a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
   $("heroTitle").textContent=t(HERO[view]);
   window.scrollTo(0,0);
 }
