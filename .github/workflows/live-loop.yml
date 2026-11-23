@@ -1,8 +1,9 @@
 name: Live-Alarmstatus (Dauerlauf)
 
-# Einmal starten ("Run workflow"), dann aktualisiert dieser Lauf den Status
-# alle 2 Minuten, bis die eingestellte Dauer erreicht ist (höchstens 5,5 Std.).
-# Gedacht für die Reise, weil GitHubs Zeitplan oft verspätet oder gar nicht startet.
+# Aktualisiert den Live-Status alle 2 Minuten, etwa 5,5 Stunden lang, und startet
+# sich am Ende selbst neu. So läuft er ohne Zutun dauerhaft weiter.
+# Fällt die Kette doch einmal aus, startet ihn der 5-Minuten-Zeitplan (live.yml) neu.
+# Anhalten: unter Actions diesen Workflow deaktivieren ("..." → "Disable workflow").
 
 on:
   workflow_dispatch:
@@ -13,10 +14,11 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
   group: live-loop
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   loop:
@@ -41,3 +43,8 @@ jobs:
             fi
             sleep 120
           done
+      - name: Nachfolger starten
+        if: success() || failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run live-loop.yml -R "${{ github.repository }}" --ref main -f minutes=330
