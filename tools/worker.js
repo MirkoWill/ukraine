@@ -2,6 +2,16 @@
 // Gibt dasselbe JSON zurück wie tools/live.py, aber direkt und mit CORS-Header,
 // damit die Seite es ohne Umweg über GitHub lesen kann.
 // Quelle: siren.pp.ua (mit Bezirken und Gemeinden), Ersatz: ubilling.net.ua (nur Oblaste).
+//
+// 24-Stunden-Lage für die Stadt Tschernihiw: Eine Zeitsteuerung (Cron, jede Minute)
+// schreibt Beginn und Ende jedes Alarms in den KV-Speicher "HIST". Ohne KV-Bindung
+// läuft der Worker trotzdem, nur ohne 24-Stunden-Lage.
+
+// Schwellen aus den offiziellen Alarmdaten der letzten 90 Tage (Alarmstunden in 24 Std.):
+// unteres Viertel = ruhig, oberes Viertel = unruhig.
+const QUIET_BELOW = 4.7;
+const BUSY_ABOVE = 10.7;
+const DAY = 24 * 3600 * 1000;
 
 const AREAS = {
   chernihiv_city: [["25", "140", "1591"], null],
@@ -95,20 +105,69 @@ async function fromUbilling() {
   return [out, "ubilling.net.ua"];
 }
 
+async function getAreas() {
+  try {
+    return await fromSiren();
+  } catch (e) {
+    return await fromUbilling();
+  }
+}
+
+// Verlauf: { start: Beginn der Aufzeichnung, open: Beginn des laufenden Alarms oder null, done: [[von, bis], ...] }
+async function readHist(env) {
+  if (!env.HIST) return null;
+  return (await env.HIST.get("chernihiv_city", "json")) || { start: Date.now(), open: null, done: [] };
+}
+
+async function record(env, area) {
+  const h = await readHist(env);
+  if (!h) return;
+  const now = Date.now();
+  let changed = false;
+  if (area.status === "alert" && h.open === null) {
+    h.open = area.since ? Math.min(Date.parse(area.since), now) : now;
+    changed = true;
+  } else if (area.status !== "alert" && h.open !== null) {
+    h.done.push([h.open, now]);
+    h.open = null;
+    changed = true;
+  }
+  const keep = h.done.filter(([, b]) => b > now - 2 * DAY);
+  if (keep.length !== h.done.length) { h.done = keep; changed = true; }
+  if (changed || !(await env.HIST.get("chernihiv_city"))) await env.HIST.put("chernihiv_city", JSON.stringify(h));
+}
+
+function last24(h) {
+  if (!h) return null;
+  const now = Date.now(), from = now - DAY;
+  const spans = h.done.concat(h.open !== null ? [[h.open, now]] : []);
+  let ms = 0, count = 0;
+  for (const [a, b] of spans) {
+    const s = Math.max(a, from), e = Math.min(b, now);
+    if (e > s) { ms += e - s; count++; }
+  }
+  const hours = Math.round((ms / 3600000) * 10) / 10;
+  const level = hours < QUIET_BELOW ? "quiet" : hours > BUSY_ABOVE ? "busy" : "normal";
+  return { hours, count, level, complete: h.start <= from, since: new Date(h.start).toISOString() };
+}
+
 export default {
-  async fetch(request) {
+  async fetch(request, env) {
     if (request.method === "OPTIONS") return new Response(null, { headers: HEADERS });
     let areas, source;
     try {
-      [areas, source] = await fromSiren();
+      [areas, source] = await getAreas();
     } catch (e) {
-      try {
-        [areas, source] = await fromUbilling();
-      } catch (e2) {
-        return new Response(JSON.stringify({ error: "Quellen nicht erreichbar" }), { status: 502, headers: HEADERS });
-      }
+      return new Response(JSON.stringify({ error: "Quellen nicht erreichbar" }), { status: 502, headers: HEADERS });
     }
+    let hist = null;
+    try { hist = last24(await readHist(env)); } catch (e) {}
     const updated = new Date().toISOString().replace(/\.\d+Z$/, "Z");
-    return new Response(JSON.stringify({ updated, source, areas }), { headers: HEADERS });
+    return new Response(JSON.stringify({ updated, source, areas, last24h: hist }), { headers: HEADERS });
+  },
+
+  async scheduled(event, env, ctx) {
+    const [areas] = await getAreas();
+    await record(env, areas.chernihiv_city);
   },
 };

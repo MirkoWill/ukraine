@@ -81,6 +81,9 @@ h3{font-size:1.1rem;font-weight:700}
 .now{display:flex;flex-direction:column;gap:6px}
 .now .state{font-family:var(--f-head);font-size:1.9rem;line-height:1.15}
 .now.bad{background:var(--bad-soft)} .now.ok{background:var(--ok-soft)} .now.warn{background:var(--warn-soft)}
+.dayrow{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.daychip{font-weight:700;font-size:.9rem;padding:4px 12px;border-radius:999px;background:var(--h0)}
+.daychip.quiet{background:var(--ok-soft);color:var(--ok)} .daychip.normal{background:var(--warn-soft);color:#8a5f00} .daychip.busy{background:var(--bad-soft);color:var(--bad)}
 .quote{margin:8px 0 0;padding-top:12px;border-top:1px solid rgba(76,122,43,.25);display:flex;flex-direction:column;gap:4px}
 .quote blockquote{margin:0;font-family:var(--f-head);font-style:italic;font-size:1.02rem;line-height:1.45;color:var(--ink);opacity:.85}
 .quote figcaption{font-size:.82rem;color:var(--muted)}
@@ -189,6 +192,11 @@ nav.tabs a[aria-current="page"]{color:var(--olive)}
     <span class="state" id="nowState">…</span>
     <span id="nowSub" class="muted"></span>
     <figure class="quote" id="quote" hidden><blockquote id="quoteText"></blockquote><figcaption id="quoteSrc"></figcaption></figure>
+  </div>
+  <div class="card day" id="dayCard" hidden>
+    <div class="dayrow"><span class="muted small" data-i="dayLabel">Tschernihiw, letzte 24 Stunden</span><span class="daychip" id="dayChip"></span></div>
+    <span id="dayText"></span>
+    <span class="small muted" id="dayNote"></span>
   </div>
   <div class="card">
     <h3 data-i="routeNow">Strecke jetzt</h3>
@@ -335,6 +343,10 @@ de:{
  subscribe:"In der App Чернігів, Київ und Броварський район abonnieren, auf der Fahrt zusätzlich die Oblaste der Strecke. In Telegram den Kanal „Чернігівська ОВА“ suchen.",
  stAlert:"Luftalarm",stPartial:"Alarm in Teilen der Oblast",stClear:"Kein Alarm",stUnknown:"Status unbekannt",
  since:"seit",stand:"Stand",updatedNow:"Aktualisiert · Stand {s}",ago:"vor {n} Min.",loading:"wird geladen …",stale:"Daten älter als 20 Minuten. Bitte die App nutzen.",
+ dayLabel:"Tschernihiw, letzte 24 Stunden",dayQuiet:"ruhig",dayNormal:"normal",dayBusy:"unruhig",dayCollect:"wird gesammelt",
+ dayText:"<b>{h} Std.</b> unter Alarm, Anzahl Alarme: {c}.",dayTextPart:"Seit {s}: <b>{h} Std.</b> unter Alarm, Anzahl Alarme: {c}.",
+ dayNote:"Ruhig heißt: weniger als 4,7 Std., unruhig: mehr als 10,7 Std. – verglichen mit den letzten 90 Tagen. Nach unruhigen Tagen folgen oft weitere unruhige. Keine Vorhersage.",
+ dayNotePart:"Die Aufzeichnung läuft seit {s}. Die Einstufung erscheint, sobald 24 Stunden erfasst sind.",
  failed:"Live-Status gerade nicht abrufbar. Bitte die App oder alerts.in.ua nutzen.",typeART:"Artilleriegefahr",
  zLead:"Wie oft war zu welcher Uhrzeit Luftalarm? Kyjiwer Zeit, eine Stunde später als in Berlin.",
  p90:"90 Tage",p365:"12 Monate",bestWin:"Ruhigstes Fenster tagsüber",worstH:"Unruhigste Stunde",perDay:"Alarme pro Tag",medDur:"Typische Dauer",
@@ -387,6 +399,10 @@ uk:{
  subscribe:"У застосунку підпишіться на Чернігів, Київ і Броварський район, у дорозі також на області маршруту. У Telegram знайдіть канал «Чернігівська ОВА».",
  stAlert:"Повітряна тривога",stPartial:"Тривога в частині області",stClear:"Тривоги немає",stUnknown:"Статус невідомий",
  since:"з",stand:"Станом на",updatedNow:"Оновлено · станом на {s}",ago:"{n} хв тому",loading:"завантаження …",stale:"Дані старші за 20 хвилин. Користуйтеся застосунком.",
+ dayLabel:"Чернігів, останні 24 години",dayQuiet:"спокійно",dayNormal:"звично",dayBusy:"неспокійно",dayCollect:"збираємо дані",
+ dayText:"<b>{h} год</b> тривоги, тривог: {c}.",dayTextPart:"З {s}: <b>{h} год</b> тривоги, тривог: {c}.",
+ dayNote:"Спокійно — менше 4,7 год, неспокійно — понад 10,7 год, порівняно з останніми 90 днями. Після неспокійних днів часто бувають ще неспокійні. Це не прогноз.",
+ dayNotePart:"Запис ведеться з {s}. Оцінка з'явиться, щойно буде охоплено 24 години.",
  failed:"Статус зараз недоступний. Користуйтеся застосунком або alerts.in.ua.",typeART:"Загроза артобстрілу",
  zLead:"Як часто о певній годині була повітряна тривога? За київським часом, на годину пізніше, ніж у Берліні.",
  p90:"90 днів",p365:"12 місяців",bestWin:"Найспокійніше вікно вдень",worstH:"Найнеспокійніша година",perDay:"Тривог на день",medDur:"Типова тривалість",
@@ -526,6 +542,17 @@ const QUOTES=[
  ["Und doch, welch Glück, geliebt zu werden! Und lieben, Götter, welch ein Glück!","Johann Wolfgang von Goethe, Willkommen und Abschied","І все ж яке це щастя — бути коханим! І кохати, боги, яке це щастя!","Йоганн Вольфганг фон Ґете, «Зустріч і прощання»"],
  ["Liebe ist der Endzweck der Weltgeschichte, das Amen des Universums.","Novalis","Любов — кінцева мета світової історії, амінь усесвіту.","Новаліс"]
 ];
+function renderDay(d){
+  const card=$("dayCard");card.hidden=!d;if(!d)return;
+  const h=num(d.hours),chip=$("dayChip");
+  if(d.complete){
+    chip.className="daychip "+d.level;chip.textContent=t({quiet:"dayQuiet",normal:"dayNormal",busy:"dayBusy"}[d.level]);
+    $("dayText").innerHTML=fmt(t("dayText"),{h,c:d.count});$("dayNote").textContent=t("dayNote");
+  }else{
+    const s=localTime(d.since);chip.className="daychip";chip.textContent=t("dayCollect");
+    $("dayText").innerHTML=fmt(t("dayTextPart"),{s,h,c:d.count});$("dayNote").textContent=fmt(t("dayNotePart"),{s});
+  }
+}
 function renderQuote(show){
   const el=$("quote");el.hidden=!show;if(!show)return;
   const q=QUOTES[(Math.floor(Date.now()/3600000)+Math.floor(Date.now()/86400000)*5)%QUOTES.length]; // shifts by 5 each day, so the same hour shows a different quote tomorrow
@@ -535,7 +562,7 @@ function renderQuote(show){
 function renderLive(){
   if(liveErr||!LIVE){
     $("stand").textContent=t("failed");$("nowState").textContent=t("stUnknown");$("nowCard").className="card now";$("nowSub").textContent="";
-    $("liveList").innerHTML="";renderQuote(false);return;
+    $("liveList").innerHTML="";renderQuote(false);renderDay(null);return;
   }
   const age=Math.max(0,Math.round((Date.now()-new Date(LIVE.updated))/60000));
   $("stand").textContent=`${t("stand")} ${localTime(LIVE.updated)} · ${fmt(t("ago"),{n:age})}`+(age>20?` · ${t("stale")}`:"");
@@ -543,6 +570,7 @@ function renderLive(){
   $("nowCard").className="card now "+stCls(s);
   $("nowState").textContent=stTxt(s);
   renderQuote(s==="clear");
+  renderDay(LIVE.last24h);
   $("nowSub").textContent=c&&c.since?`${t("since")} ${localTime(c.since)}`+(c.types&&c.types.includes("ARTILLERY")?` · ${t("typeART")}`:""):"";
   $("liveList").innerHTML=LIVE_ORDER.map(k=>{const a=LIVE.areas[k],s=stOf(a);
     return `<div class="row"><span class="dot ${stCls(s)}"></span><div class="grow"><div class="name">${t("areas")[k]}</div><div class="sub">${stTxt(s)}</div></div><div class="right">${a&&a.since&&s!=="clear"?t("since")+" "+localTime(a.since):""}</div></div>`}).join("");
