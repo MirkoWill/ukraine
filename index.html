@@ -142,8 +142,13 @@ table.heat td{width:24px;min-width:24px;height:24px;border-radius:4px;text-align
 .check{display:flex;gap:10px;align-items:flex-start;font-size:.95rem;cursor:pointer}
 .check input{width:20px;height:20px;margin-top:2px;accent-color:var(--olive);flex:none}
 .fam{display:flex;flex-direction:column;gap:12px}
+ol.nsteps{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:12px}
+ol.nsteps li{display:flex;flex-direction:column;gap:6px;padding:12px;border-radius:12px;background:var(--olive-soft)}
+ol.nsteps li > div{display:flex;flex-wrap:wrap;gap:8px}
+code.topic{font-size:.95rem;background:var(--surface);padding:2px 6px;border-radius:6px;word-break:break-all}
 .fam input[type=text]{font:inherit;font-size:1rem;border:1.5px solid var(--olive);border-radius:12px;padding:9px 12px;background:var(--surface);color:var(--ink);width:100%;min-width:0}
 .fam label{font-size:.9rem;color:var(--muted);display:flex;flex-direction:column;gap:4px}
+.fam label.check{flex-direction:row;color:var(--ink);font-size:.95rem}
 .famcode{font-size:1.5rem;font-weight:700;letter-spacing:.12em;font-variant-numeric:tabular-nums}
 .btn.big{font-size:1.15rem;padding:14px 18px;justify-content:center;width:100%}
 .flag{display:inline-block;font-size:.78rem;font-weight:700;color:var(--bad);margin-left:6px}
@@ -220,17 +225,16 @@ nav.tabs a[aria-current="page"]{color:var(--olive)}
     <span id="dayText"></span>
     <span class="small muted" id="dayNote"></span>
   </div>
-  <div class="card" id="notifCard">
-    <h3 data-i="notifT">Benachrichtigungen</h3>
-    <p id="notifText" class="small"></p>
-    <div class="select-row" id="notifBtns"></div>
-    <label class="check" id="dailyRow" hidden><input type="checkbox" id="dailyChk"> <span data-i="dailyL">Tägliche Zusammenfassung</span></label>
-    <p id="notifHint" class="small muted"></p>
-  </div>
-  <div class="card" id="famCard">
-    <h3 data-i="famT">Familie</h3>
+  <div class="card stripe ok" id="famCard">
+    <h3 data-i="famT">Benachrichtigungen und Familie</h3>
     <p class="small" id="famIntro"></p>
     <div id="famBody" class="fam"></div>
+  </div>
+  <div class="card" id="notifCard">
+    <h3 data-i="notifT">Im Browser (Alternative)</h3>
+    <p id="notifText" class="small"></p>
+    <div class="select-row" id="notifBtns"></div>
+    <p id="notifHint" class="small muted"></p>
   </div>
   <div class="card">
     <h3 data-i="routeNow">Strecke jetzt</h3>
@@ -418,15 +422,15 @@ de:{
  dayNote:"Ruhig heißt: weniger als 4,7 Std., unruhig: mehr als 10,7 Std. – verglichen mit den letzten 90 Tagen. Nach unruhigen Tagen folgen oft weitere unruhige. Keine Vorhersage.",
  dayNotePart:"Die Aufzeichnung läuft seit {s}. Die Einstufung erscheint, sobald 24 Stunden erfasst sind.",
  scope:{city:"Gilt für die Stadt.",raion:"Gilt für den ganzen Bezirk Tschernihiw, auch die Stadt.",oblast:"Gilt für die ganze Oblast, auch die Stadt."},
- notifT:"Benachrichtigungen",notifOff:"Bei Beginn und Ende eines Alarms in der Stadt Tschernihiw meldet sich das Handy, auch wenn die Seite geschlossen ist.",
+ notifT:"Im Browser (Alternative)",notifOff:"Bei Beginn und Ende eines Alarms in der Stadt Tschernihiw meldet sich das Handy, auch wenn die Seite geschlossen ist.",
  notifOn:"Eingeschaltet. Bei Alarm und Entwarnung in der Stadt Tschernihiw kommt eine Benachrichtigung.",
  notifDenied:"Benachrichtigungen sind im Browser blockiert. In den Website-Einstellungen des Browsers für diese Seite erlauben.",
  notifNo:"Dieser Browser unterstützt keine Benachrichtigungen.",
  notifIOS:"Auf dem iPhone: zuerst über „Teilen“ → „Zum Home-Bildschirm“ hinzufügen, die App von dort öffnen und hier einschalten.",
  notifQuiet:"Der Browser hat nicht nachgefragt. Auf das Symbol links neben der Adresse tippen → Berechtigungen → Benachrichtigungen erlauben. Unter Android auch prüfen: Einstellungen → Apps → Chrome → Benachrichtigungen an.",nbarText:"Bei Alarm in Tschernihiw benachrichtigen",openChrome:"In Chrome öffnen",notifChrome:"Hier sind Benachrichtigungen nicht möglich, zum Beispiel weil die Seite in einem Messenger geöffnet wurde. Bitte in Chrome öffnen und dort einschalten.",
  dailyL:"Jeden Morgen um 8 Uhr (Kyjiwer Zeit) eine Zusammenfassung der letzten 24 Stunden",
- famT:"Familie",famNeedPush:"Zuerst oben die Benachrichtigungen einschalten. Danach lassen sich die Handys der Familie verbinden.",
- famIntro:"Verbindet eure Handys. Dann kann jede Person mit einem Tipp melden, dass alles in Ordnung ist, und die anderen bekommen sofort eine Benachrichtigung.",
+ famT:"Benachrichtigungen und Familie",famIntro2:"Alarme, Entwarnungen und Lebenszeichen kommen über die kostenlose App ntfy, zuverlässig und auch bei stummgeschaltetem Handy.",ntStep1:"1. App ntfy installieren",ntInstall:"ntfy installieren",ntStep2:"2. Kanal abonnieren",ntSub:"In ntfy abonnieren",ntManual:"Falls sich ntfy nicht öffnet: in ntfy auf „+“ tippen und diesen Namen eintragen:",ntStep3:"3. Prüfen",ntTestSent:"Test gesendet. Kommt in ntfy in wenigen Sekunden.",nbarSetup:"Einrichten",
+ famIntro:"Einmal einrichten: Namen eintragen und eine Familie anlegen, oder den Code vom anderen Handy eingeben. Danach kommen Alarme über die App ntfy, und ihr könnt euch mit einem Tipp melden, dass alles in Ordnung ist.",
  famName:"Dein Name (sehen die anderen)",famNew:"Neue Familie anlegen",famJoin:"Code eingeben",famJoinBtn:"Verbinden",famCodeL:"Familien-Code",
  famCodeHint:"Diesen Code auf dem anderen Handy unter „Code eingeben“ eintragen. Nicht öffentlich teilen.",
  famOk:"Mir geht’s gut",famOkSent:"Gesendet. Die Familie wird benachrichtigt.",famWait:"Gerade erst gesendet. Bitte kurz warten.",famLeave:"Verbindung lösen",
@@ -499,15 +503,15 @@ uk:{
  dayNote:"Спокійно — менше 4,7 год, неспокійно — понад 10,7 год, порівняно з останніми 90 днями. Після неспокійних днів часто бувають ще неспокійні. Це не прогноз.",
  dayNotePart:"Запис ведеться з {s}. Оцінка з'явиться, щойно буде охоплено 24 години.",
  scope:{city:"Тривога для міста.",raion:"Тривога для всього Чернігівського району, включно з містом.",oblast:"Тривога для всієї області, включно з містом."},
- notifT:"Сповіщення",notifOff:"На початку і наприкінці тривоги в місті Чернігові телефон повідомить вас, навіть коли сторінку закрито.",
+ notifT:"У браузері (альтернатива)",notifOff:"На початку і наприкінці тривоги в місті Чернігові телефон повідомить вас, навіть коли сторінку закрито.",
  notifOn:"Увімкнено. Про тривогу й відбій у місті Чернігові надійде сповіщення.",
  notifDenied:"Сповіщення заблоковано в браузері. Дозвольте їх у налаштуваннях сайту для цієї сторінки.",
  notifNo:"Цей браузер не підтримує сповіщення.",
  notifIOS:"На iPhone: спершу «Поділитися» → «На початковий екран», відкрийте застосунок звідти й увімкніть тут.",
  notifQuiet:"Браузер не запитав дозволу. Торкніться значка ліворуч від адреси → Дозволи → дозвольте сповіщення. В Android також перевірте: Налаштування → Застосунки → Chrome → Сповіщення увімкнено.",nbarText:"Сповіщати про тривогу в Чернігові",openChrome:"Відкрити в Chrome",notifChrome:"Тут сповіщення неможливі, наприклад, бо сторінку відкрито в месенджері. Відкрийте її в Chrome і ввімкніть там.",
  dailyL:"Щоранку о 8:00 (за Києвом) підсумок за останню добу",
- famT:"Родина",famNeedPush:"Спершу увімкніть сповіщення вище. Потім можна поєднати телефони родини.",
- famIntro:"Поєднайте ваші телефони. Тоді кожен одним дотиком може повідомити, що все гаразд, і інші одразу отримають сповіщення.",
+ famT:"Сповіщення та родина",famIntro2:"Тривоги, відбій і повідомлення «усе гаразд» надходять через безкоштовний застосунок ntfy — надійно і навіть на беззвучному телефоні.",ntStep1:"1. Встановіть застосунок ntfy",ntInstall:"Встановити ntfy",ntStep2:"2. Підпишіться на канал",ntSub:"Підписатися в ntfy",ntManual:"Якщо ntfy не відкрився: у ntfy натисніть «+» і введіть цю назву:",ntStep3:"3. Перевірте",ntTestSent:"Тест надіслано. Надійде в ntfy за кілька секунд.",nbarSetup:"Налаштувати",
+ famIntro:"Налаштуйте один раз: введіть ім'я і створіть родину або введіть код з іншого телефону. Після цього тривоги надходитимуть через застосунок ntfy, і ви зможете одним дотиком повідомити, що все гаразд.",
  famName:"Ваше ім'я (бачитимуть інші)",famNew:"Створити родину",famJoin:"Ввести код",famJoinBtn:"Поєднати",famCodeL:"Код родини",
  famCodeHint:"Введіть цей код на іншому телефоні в «Ввести код». Не поширюйте його публічно.",
  famOk:"Зі мною все гаразд",famOkSent:"Надіслано. Родина отримає сповіщення.",famWait:"Щойно надіслано. Зачекайте трохи.",famLeave:"Від'єднатися",
@@ -631,7 +635,6 @@ function renderNotif(){
   $("notifText").textContent=text;$("notifBtns").innerHTML=btns;$("notifHint").textContent=hint;
   $("nOn")&&($("nOn").onclick=enablePush);$("nOff")&&($("nOff").onclick=disablePush);$("nTest")&&($("nTest").onclick=testPush);$("nChrome")&&($("nChrome").onclick=openChrome);
   renderBar();renderFam();
-  $("dailyRow").hidden=!pushSub;$("dailyChk").checked=store.get("daily")==="1";
 }
 /* ---------- Familie und Tageszusammenfassung ---------- */
 const CODE_ABC="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -642,36 +645,50 @@ async function syncFam(){
   if(!pushSub)return;
   await post("/family",{endpoint:pushSub.endpoint,family:store.get("famCode")||null,name:store.get("famName")||"",daily:store.get("daily")==="1"});
 }
-function renderFam(){
+const PLAY="https://play.google.com/store/apps/details?id=io.heckel.ntfy",APPSTORE="https://apps.apple.com/app/ntfy/id1625396347";
+async function topicFor(code){const h=await crypto.subtle.digest("SHA-256",new TextEncoder().encode("ntfy:"+code));return "chn-"+[...new Uint8Array(h)].slice(0,10).map(b=>b.toString(16).padStart(2,"0")).join("")}
+async function ntfyReg(on=true){const code=store.get("famCode");if(!code)return;await post("/ntfy",{family:code,on,daily:store.get("daily")==="1"})}
+async function renderFam(){
   const body=$("famBody"),code=store.get("famCode"),name=store.get("famName")||"";
-  if(!pushSub){$("famIntro").textContent=t("famNeedPush");body.innerHTML="";return}
-  $("famIntro").textContent=t("famIntro");
   const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
   const nameField=`<label for="famNameIn">${t("famName")}<input type="text" id="famNameIn" maxlength="30" value="${esc(name)}" autocomplete="given-name"></label>`;
+  $("famIntro").textContent=t(code?"famIntro2":"famIntro");
   if(code){
-    body.innerHTML=`<button class="btn solid big" type="button" id="famOkBtn">✓ ${t("famOk")}</button>
+    const topic=await topicFor(code);
+    if(store.get("famCode")!==code)return;
+    body.innerHTML=`<ol class="nsteps">
+        <li><b>${t("ntStep1")}</b><div><a class="btn" href="${isIOS?APPSTORE:PLAY}" target="_blank" rel="noopener">${t("ntInstall")}</a></div></li>
+        <li><b>${t("ntStep2")}</b><div><a class="btn solid" id="ntSubBtn" href="ntfy://ntfy.sh/${topic}">${t("ntSub")}</a></div>
+          <span class="small muted">${t("ntManual")} <code class="topic" id="ntTopic">${topic}</code></span></li>
+        <li><b>${t("ntStep3")}</b><div><button class="btn" type="button" id="ntTestBtn">${t("notifTest")}</button></div></li>
+      </ol>
+      <label class="check"><input type="checkbox" id="dailyChk"${store.get("daily")==="1"?" checked":""}> <span>${t("dailyL")}</span></label>
+      <button class="btn solid big" type="button" id="famOkBtn">✓ ${t("famOk")}</button>
       ${nameField}
       <div><span class="small muted">${t("famCodeL")}</span><div class="select-row"><span class="famcode" id="famCodeTxt">${code}</span><button class="btn" type="button" id="famCopyBtn">${t("famCopy")}</button></div><p class="small muted">${t("famCodeHint")}</p></div>
       <div><button class="btn" type="button" id="famLeaveBtn">${t("famLeave")}</button></div>`;
+    $("ntSubBtn").onclick=()=>{store.set("ntfyOn","1");ntfyReg(true).catch(()=>{});renderBar()};
+    $("ntTestBtn").onclick=async()=>{try{store.set("ntfyOn","1");await ntfyReg(true);await post("/ntfytest",{family:code});toast(t("ntTestSent"));renderBar()}catch(e){toast(t("notifErr"))}};
+    $("dailyChk").onchange=async e=>{store.set("daily",e.target.checked?"1":"");try{await syncFam();if(store.get("ntfyOn")==="1")await ntfyReg(true)}catch(err){toast(t("notifErr"))}};
     $("famOkBtn").onclick=sendOk;
     $("famCopyBtn").onclick=async()=>{try{await navigator.clipboard.writeText(code);toast(t("famCopied"))}catch(e){const r=document.createRange();r.selectNodeContents($("famCodeTxt"));const s=getSelection();s.removeAllRanges();s.addRange(r)}};
-    $("famLeaveBtn").onclick=async()=>{store.set("famCode","");renderFam();try{await syncFam()}catch(e){}};
+    $("famLeaveBtn").onclick=async()=>{store.set("famCode","");store.set("ntfyOn","");renderFam();renderBar();try{await syncFam()}catch(e){}};
   }else{
     body.innerHTML=`${nameField}
       <div class="select-row"><button class="btn solid" type="button" id="famNewBtn">${t("famNew")}</button></div>
       <label for="famCodeIn">${t("famJoin")}<input type="text" id="famCodeIn" placeholder="ABCDE-FGHJK" autocapitalize="characters" autocomplete="off"></label>
       <div class="select-row"><button class="btn" type="button" id="famJoinBtn">${t("famJoinBtn")}</button></div>`;
     const needName=()=>{const n=$("famNameIn").value.trim();if(!n){toast(t("famNameMissing"));$("famNameIn").focus();return false}store.set("famName",n);return true};
-    $("famNewBtn").onclick=async()=>{if(!needName())return;store.set("famCode",newCode());renderFam();try{await syncFam()}catch(e){toast(t("notifErr"))}};
+    $("famNewBtn").onclick=async()=>{if(!needName())return;store.set("famCode",newCode());await renderFam();syncFam().catch(()=>{})};
     $("famJoinBtn").onclick=async()=>{if(!needName())return;const c=$("famCodeIn").value.toUpperCase().replace(/[^A-Z0-9]/g,"");
       if(c.length!==10){toast(t("famBadCode"));return}
-      store.set("famCode",c.slice(0,5)+"-"+c.slice(5));renderFam();try{await syncFam()}catch(e){toast(t("notifErr"))}};
+      store.set("famCode",c.slice(0,5)+"-"+c.slice(5));await renderFam();syncFam().catch(()=>{})};
   }
   $("famNameIn").onchange=async e=>{store.set("famName",e.target.value.trim());try{await syncFam()}catch(err){}};
 }
 async function sendOk(){
   const b=$("famOkBtn");b.disabled=true;
-  try{const r=await fetch(WORKER+"/ok",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({endpoint:pushSub.endpoint})});
+  try{const r=await fetch(WORKER+"/ok",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({family:store.get("famCode"),name:store.get("famName")||"",endpoint:pushSub?pushSub.endpoint:undefined})});
     toast(r.ok?t("famOkSent"):r.status===429?t("famWait"):t("notifErr"))}
   catch(e){toast(t("notifErr"))}
   setTimeout(()=>{if($("famOkBtn"))$("famOkBtn").disabled=false},3000);
@@ -680,14 +697,12 @@ async function sendOk(){
 // Leiste unten über der Navigation, solange Benachrichtigungen aus sind
 function renderBar(){
   const bar=$("nbar"),dismissed=store.get("nbarOff")==="1";
-  let show=!pushSub&&!dismissed&&(pushOK||isIOS),label=t("notifEnable"),act=enablePush;
-  if(needChrome()){show=!pushSub&&!dismissed;label=t("openChrome");act=openChrome}
-  else if(pushOK&&Notification.permission==="denied"){label=t("nbarHow");act=()=>toast(t("notifQuiet"))}
-  if(!pushOK&&isIOS){label=t("nbarHow");act=()=>toast(t("notifIOS"))}
+  const show=!pushSub&&store.get("ntfyOn")!=="1"&&!dismissed;
   bar.hidden=!show;document.body.classList.toggle("has-nbar",show);
   if(!show)return;
   bar.style.bottom=document.querySelector("nav.tabs").offsetHeight+"px";
-  $("nbarText").textContent=t("nbarText");$("nbarBtn").textContent=label;$("nbarBtn").onclick=act;
+  $("nbarText").textContent=t("nbarText");$("nbarBtn").textContent=t("nbarSetup");
+  $("nbarBtn").onclick=()=>{if(location.hash!=="#live")location.hash="#live";setTimeout(()=>$("famCard").scrollIntoView({behavior:"smooth",block:"start"}),50)};
   $("nbarX").onclick=()=>{store.set("nbarOff","1");renderBar()};
 }
 window.addEventListener("resize",()=>{if(!$("nbar").hidden)renderBar()});
@@ -910,7 +925,6 @@ window.addEventListener("hashchange",route);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)loadLive()});
 setInterval(loadLive,60000);
 
-$("dailyChk").onchange=async e=>{store.set("daily",e.target.checked?"1":"");try{await syncFam()}catch(err){toast(t("notifErr"))}};
 window.addEventListener("online",loadLive);window.addEventListener("offline",()=>{if(LIVE)renderLive()});
 applyText();route();loadLive();renderKm();initPush();saveLang();saveFamCache();
 fetch("data/stats.json").then(r=>r.json()).then(d=>{STATS=d;renderStats()}).catch(()=>{$("srcNote").textContent="data/stats.json?"});

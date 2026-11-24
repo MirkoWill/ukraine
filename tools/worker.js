@@ -10,7 +10,13 @@
 //                   der eigenen Familie f), liest der Service Worker beim Push
 // POST /family      Familie, Name und Tageszusammenfassung zu einem Abo speichern
 //                   { endpoint, family, name, daily }
-// POST /ok          Lebenszeichen an die anderen Handys der Familie  { endpoint }
+// POST /ok          Lebenszeichen an die Familie  { family, name } (oder { endpoint } eines Browser-Abos)
+// POST /ntfy        ntfy für eine Familie ein-/ausschalten  { family, on, daily }
+// POST /ntfytest    Test-Nachricht an den ntfy-Kanal der Familie  { family }
+//
+// ntfy: Jede Familie hat einen eigenen Kanal auf ntfy.sh. Sein Name wird aus dem geheimen
+// Familien-Code abgeleitet (SHA-256), steht also nirgends öffentlich. Alarme gehen mit höchster
+// Priorität raus, damit ntfy sie auch bei stummem Handy meldet. Texte zweisprachig (UA/DE).
 //
 // Quelle: siren.pp.ua (mit Bezirken und Gemeinden), Ersatz: ubilling.net.ua (nur Oblaste).
 //
@@ -245,6 +251,65 @@ async function pushAll(env, want = () => true) {
   } while (cursor);
 }
 
+// ---------- ntfy ----------
+const FAM_RE = /^[A-Z0-9]{5}-[A-Z0-9]{5}$/;
+async function ntfyTopic(family) {
+  const h = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("ntfy:" + family));
+  return "chn-" + [...new Uint8Array(h)].slice(0, 10).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+const SCOPE = {
+  city: ["Тривога для міста Чернігова.", "Alarm für die Stadt Tschernihiw."],
+  raion: ["Тривога для всього Чернігівського району, включно з містом.", "Alarm für den ganzen Bezirk Tschernihiw, auch die Stadt."],
+  oblast: ["Тривога для всієї Чернігівської області, включно з містом.", "Alarm für die ganze Oblast Tschernihiw, auch die Stadt."],
+};
+const LEVEL = { quiet: ["спокійно", "ruhig"], normal: ["звично", "normal"], busy: ["неспокійно", "unruhig"] };
+const hhmm = (iso) => new Date(iso).toLocaleTimeString("uk-UA", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Kyiv" });
+
+function ntfyMessage(ev) {
+  if (ev.kind === "alert") {
+    const s = SCOPE[ev.scope] || ["", ""];
+    return { title: "Повітряна тривога: Чернігів / Luftalarm in Tschernihiw", message: `${s[0]} Пройдіть в укриття.\n${s[1]} Bitte in den Schutzraum gehen.`, priority: 5, tags: ["rotating_light"] };
+  }
+  if (ev.kind === "clear") return { title: "Відбій тривоги: Чернігів / Entwarnung in Tschernihiw", message: "Тривогу скасовано.\nDer Alarm ist beendet.", priority: 3, tags: ["white_check_mark"] };
+  if (ev.kind === "ok") {
+    const n = ev.name ? ev.name + ": " : "";
+    return { title: `${n}усе гаразд / Alles in Ordnung`, message: `Надіслано о ${hhmm(ev.at)} (Київ) / gesendet um ${hhmm(ev.at)} Uhr (Kyjiw)`, priority: 4, tags: ["green_heart"] };
+  }
+  if (ev.kind === "daily" && ev.level) {
+    const l = LEVEL[ev.level];
+    const h = String(ev.hours);
+    return { title: `Чернігів за добу: ${l[0]} / Tschernihiw 24 Std.: ${l[1]}`, message: `${h} год під тривогою, тривог: ${ev.count}.\n${h.replace(".", ",")} Std. unter Alarm, Anzahl Alarme: ${ev.count}.`, priority: 2, tags: ["bar_chart"] };
+  }
+  return { title: "Тест / Test", message: "Сповіщення працюють. / Benachrichtigungen funktionieren.", priority: 3, tags: ["bell"] };
+}
+
+async function ntfySend(family, ev) {
+  const m = ntfyMessage(ev);
+  try {
+    const r = await fetch("https://ntfy.sh/", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ topic: await ntfyTopic(family), click: SITE + "#live", ...m }),
+    });
+    return r.status;
+  } catch (e) {
+    return 0;
+  }
+}
+
+// an alle Familien mit ntfy, für die want(eintrag) zutrifft
+async function ntfyAll(env, ev, want = () => true) {
+  let cursor;
+  do {
+    const page = await kv(env).list({ prefix: "ntfy:", cursor });
+    for (const k of page.keys) {
+      const f = await kv(env).get(k.name, "json");
+      if (f && want(f)) await ntfySend(k.name.slice(5), ev);
+    }
+    cursor = page.list_complete ? null : page.cursor;
+  } while (cursor);
+}
+
 // ---------- Handler ----------
 export default {
   async fetch(request, env, ctx) {
@@ -263,7 +328,38 @@ export default {
       const newest = list.filter(Boolean).sort((a, b) => Date.parse(b.at) - Date.parse(a.at))[0];
       return json(newest || {}, 200, { "cache-control": "no-store" });
     }
-    if (request.method === "POST" && ["/subscribe", "/unsubscribe", "/test", "/family", "/ok"].includes(path)) {
+    if (request.method === "POST" && ["/ok", "/ntfy", "/ntfytest"].includes(path)) {
+      if (!kv(env)) return json({ error: "Kein KV-Speicher verbunden" }, 503);
+      let body;
+      try { body = await request.json(); } catch (e) { return json({ error: "Ungültige Anfrage" }, 400); }
+      let family = typeof body.family === "string" ? body.family : null;
+      let name = String(body.name || "").slice(0, 30), sender = typeof body.endpoint === "string" ? body.endpoint : null;
+      if (!family && body.endpoint) {
+        const s = await kv(env).get("sub:" + (await subId(body.endpoint)), "json");
+        if (s) { family = s.family; name = name || s.name || ""; sender = s.endpoint; }
+      }
+      if (!family || !FAM_RE.test(family)) return json({ error: "Keine Familie verbunden" }, 400);
+      if (path === "/ntfy") {
+        if (body.on === false) await kv(env).delete("ntfy:" + family);
+        else await kv(env).put("ntfy:" + family, JSON.stringify({ daily: !!body.daily, t: Date.now() }));
+        return json({ ok: true, topic: await ntfyTopic(family) });
+      }
+      if (path === "/ntfytest") {
+        const status = await ntfySend(family, { kind: "test" });
+        return json({ ok: status >= 200 && status < 300, status });
+      }
+      // /ok
+      const last = await kv(env).get("fam:" + family, "json");
+      if (last && Date.now() - Date.parse(last.at) < 30000) return json({ error: "Bitte kurz warten" }, 429);
+      const ev = { kind: "ok", at: new Date().toISOString(), name };
+      await kv(env).put("fam:" + family, JSON.stringify(ev));
+      ctx.waitUntil(Promise.all([
+        pushAll(env, (x) => x.family === family && x.endpoint !== sender),
+        (async () => { if (await kv(env).get("ntfy:" + family)) await ntfySend(family, ev); })(),
+      ]));
+      return json({ ok: true });
+    }
+    if (request.method === "POST" && ["/subscribe", "/unsubscribe", "/test", "/family"].includes(path)) {
       if (!kv(env)) return json({ error: "Kein KV-Speicher verbunden" }, 503);
       let body;
       try { body = await request.json(); } catch (e) { return json({ error: "Ungültige Anfrage" }, 400); }
@@ -283,15 +379,6 @@ export default {
         s.name = String(body.name || "").slice(0, 30);
         s.daily = !!body.daily;
         await kv(env).put(id, JSON.stringify(s));
-        return json({ ok: true });
-      }
-      if (path === "/ok") {
-        const s = await kv(env).get(id, "json");
-        if (!s || !s.family) return json({ error: "Keine Familie verbunden" }, 400);
-        const last = await kv(env).get("fam:" + s.family, "json");
-        if (last && Date.now() - Date.parse(last.at) < 30000) return json({ error: "Bitte kurz warten" }, 429);
-        await kv(env).put("fam:" + s.family, JSON.stringify({ kind: "ok", at: new Date().toISOString(), name: s.name || "" }));
-        ctx.waitUntil(pushAll(env, (x) => x.family === s.family && x.endpoint !== s.endpoint));
         return json({ ok: true });
       }
       if (path === "/unsubscribe") {
@@ -322,8 +409,9 @@ export default {
     const transition = await record(env, areas.chernihiv_city);
     if (!kv(env)) return;
     if (transition) {
-      await kv(env).put("event", JSON.stringify({ kind: transition, at: new Date().toISOString(), scope: areas.chernihiv_city.scope || null }));
-      await pushAll(env);
+      const ev = { kind: transition, at: new Date().toISOString(), scope: areas.chernihiv_city.scope || null };
+      await kv(env).put("event", JSON.stringify(ev));
+      await Promise.all([pushAll(env), ntfyAll(env, ev)]);
     }
     // Tageszusammenfassung um 8:00 Uhr Kyjiwer Zeit (einmal pro Tag)
     const kyiv = new Date().toLocaleString("sv-SE", { timeZone: "Europe/Kyiv" }); // "2026-11-24 08:00:12"
@@ -331,8 +419,9 @@ export default {
     if (time >= "08:00" && time < "08:10" && (await kv(env).get("dailySent")) !== day) {
       await kv(env).put("dailySent", day);
       const sum = last24(await readHist(env));
-      await kv(env).put("daily", JSON.stringify({ kind: "daily", at: new Date().toISOString(), ...(sum || {}) }));
-      await pushAll(env, (s) => s.daily);
+      const ev = { kind: "daily", at: new Date().toISOString(), ...(sum || {}) };
+      await kv(env).put("daily", JSON.stringify(ev));
+      await Promise.all([pushAll(env, (s) => s.daily), ntfyAll(env, ev, (f) => f.daily)]);
     }
   },
 };
