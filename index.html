@@ -236,10 +236,10 @@ nav.tabs a[aria-current="page"]{color:var(--olive)}
 <!-- ROUTE -->
 <div class="view" id="v-route" hidden>
   <div class="card">
-    <h3 data-i="planT">Fahrt planen ab Lwiw</h3>
+    <h3 data-i="planT">Rückreise planen ab Tschernihiw</h3>
     <div class="select-row">
       <div class="seg" id="modeSeg"></div>
-      <label class="small" for="dep" data-i="depL">Abfahrt Lwiw</label>
+      <label class="small" for="dep" data-i="depL">Abfahrt Tschernihiw</label>
       <select id="dep"></select>
     </div>
     <div id="legs"></div>
@@ -362,7 +362,7 @@ de:{
  dsLocal:"Gewählte Sprache und Schriftgröße werden nur auf Ihrem Gerät gespeichert (localStorage). Es gibt keine Cookies, keine Statistik- oder Werbedienste. Schriften werden von dieser Seite selbst geladen, nicht von Google.",
  dsRights:"Sie haben das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Widerspruch sowie Beschwerde bei einer Datenschutz-Aufsichtsbehörde, in Berlin bei der Berliner Beauftragten für Datenschutz und Informationsfreiheit.",
  mark1:"Sicher in",mark2:"Tschernihiw",eyebrow:"Чернігів · Чернігівська область",vOrt:"Vor Ort",tOrt:"Vor Ort",returnLink:"Rückreise planen",refresh:"Aktualisieren",
- vLive:"Live",vZeiten:"Zeiten",vRoute:"Route",vRegeln:"Regeln",tLive:"Live",tZeit:"Zeiten",tRoute:"Route",tRules:"Regeln",
+ vLive:"Live",vZeiten:"Zeiten",vRoute:"Rückreise",vRegeln:"Regeln",tLive:"Live",tZeit:"Zeiten",tRoute:"Route",tRules:"Regeln",
  nowLabel:"Stadt Tschernihiw, jetzt",routeNow:"Umgebung jetzt",
  liveNote:"Grün: kein Alarm. Gelb: Alarm nur in einzelnen Bezirken der Oblast. Rot: Alarm. Wird etwa jede Minute aktualisiert und kann kurz hinterherhinken.",
  appWarnT:"Maßgeblich ist die offizielle App.",appWarn:"Diese Seite kann verspätet sein. Die App „Повітряна тривога“ mit Ton warnt sofort.",
@@ -382,22 +382,21 @@ de:{
  curfew:"Ausgangssperre 00–05",legendNum:"Zahl ab 40 %",
  src:"Quelle: offizielle Luftalarm-Daten (Datensatz „ukrainian-air-raid-sirens-dataset“), Stand {d}. Ein Alarm ist eine Warnung, nicht unbedingt ein Einschlag. Für jeden Ort zählen Alarme der ganzen Oblast und des Bezirks.",
  days:["Mo","Di","Mi","Do","Fr","Sa","So"],
- planT:"Fahrt planen ab Lwiw",depL:"Abfahrt Lwiw",car:"Auto / Bus",train:"Zug",
+ planT:"Rückreise planen ab Tschernihiw",depL:"Abfahrt Tschernihiw",car:"Auto / Bus",train:"Zug",
  planNote:"Fahrzeiten sind Richtwerte. Prozent: wie oft in den letzten 90 Tagen zu dieser Uhrzeit in diesem Gebiet Alarm war.",
- sumAvg:"Durchschnitt über die Fahrt: <b>{p} %</b>. Ankunft Tschernihiw etwa <b>{a}</b> (Kyjiwer Zeit).",
+ sumAvg:"Durchschnitt über die Fahrt: <b>{p} %</b>. Ankunft Lwiw etwa <b>{a}</b> (Kyjiwer Zeit), von dort noch 80 km bis zur Grenze Krakiwez/Korczowa.",
  curfewHit:"Fällt in die Ausgangssperre",curfewWarn:"Mit dem Auto liegt ein Teil der Fahrt in der Ausgangssperre (00–05 Uhr). Das ist nicht erlaubt.",
  best:"Beste Abfahrt: {h} (Ø {p} %)",change:"Umstieg in Kyjiw",
- kmT:"Kilometer",kmNote:"Straßenkilometer nach OpenStreetMap. Fahrzeiten ohne Pausen und ohne Wartezeit an der Grenze.",kmTot:"km von Wartenberg bis Tschernihiw",kmSub:"{a} km bis zur ukrainischen Grenze · reine Fahrzeit etwa {h} Std.",border:"Grenze",zoneUA:"Alarmgebiet",
+ kmT:"Kilometer",kmNote:"Straßenkilometer nach OpenStreetMap. Fahrzeiten ohne Pausen und ohne Wartezeit an der Grenze.",kmTot:"km von Tschernihiw bis Wartenberg",kmSub:"Grenze zu Polen nach {a} km · reine Fahrzeit etwa {h} Std.",border:"Grenze",zoneUA:"Alarmgebiet",
  wayT:"Der Weg",distT:"Bezirke der Oblast Tschernihiw",alarmShare:"der Zeit unter Alarm",
  avoidT:"Nicht hinfahren",
  avoid:"In den Grenzstreifen zu Russland und Belarus, besonders um Nowhorod-Siwerskyj, Semeniwka, Korjukiwka-Nord, Horodnja und Ripky. Dort gibt es Beschuss und Angriffe mit FPV-Drohnen auf Fahrzeuge, auch tagsüber. Ausflüge nur in Richtung Süden oder Kyjiw.",
  steps:[
-  ["Wartenberg → Grenze Forst","Über die A10, A13 und A15 an Cottbus vorbei zur Grenze bei Forst/Olszyna, 190 km. In Polen auf der A18 bis Krzyżowa, dann die A4 über Wrocław, Katowice, Kraków und Rzeszów bis Korczowa. In Polen gibt es keinen Luftalarm. Polen hat die Berliner Zeit."],
-  ["Grenze Korczowa → Krakiwez","Grenzübergang für Autos nach 897 km, Wartezeiten vorher prüfen (Links unten). Danach 80 km auf der M10 nach Lwiw. Ab der Grenze gilt Kyjiwer Zeit, die Uhr eine Stunde vorstellen."],
-  ["Lwiw","Hier beginnt das Alarmgebiet, die Alarm-App jetzt einschalten. Lwiw ist seltener betroffen, wird aber bei großen Angriffswellen nachts mit Raketen und Drohnen angegriffen."],
-  ["Lwiw → Kyjiw","Zug (Intercity etwa 5–7 Std., über Ternopil, Chmelnyzkyj, Winnyzja) oder Auto über die M06 durch Riwne und Schytomyr (etwa 540 km, 7–8 Std.). Nachtzüge fahren auch während Alarm; das ist die übliche Art zu reisen."],
-  ["Kyjiw","Kyjiw wird vor allem nachts angegriffen. Bei Ankunft in der Nacht im Bahnhof bleiben; der Bahnhof und die Metro dienen als Schutzraum."],
-  ["Kyjiw → Tschernihiw","Zug ab Kyjiw-Passaschyrskyj oder Auto über die M01 durch Browary und Koselez (etwa 145 km, 2 Std.). Am besten zwischen 10 und 17 Uhr."]
+  ["Tschernihiw → Kyjiw","Bus oder Zug nach Kyjiw (etwa 2–2½ Std.) oder Auto über die M01 durch Koselez und Browary (145 km). Am besten vormittags losfahren: In Tschernihiw ist es zwischen 10 und 16 Uhr am ruhigsten, ab 19 Uhr am unruhigsten. Vorher in der App die Lage prüfen."],
+  ["Kyjiw","Umsteigen oder kurze Pause. Kyjiw wird vor allem nachts angegriffen. Bei Alarm ist die Metro der beste Schutzraum."],
+  ["Kyjiw → Lwiw","Auto über die M06 durch Schytomyr und Riwne (etwa 540 km, 7–8 Std.) oder Zug (Intercity 5–7 Std.). Mit dem Auto muss die Fahrt in der Ukraine vor der Ausgangssperre um 00:00 Uhr enden, also früh losfahren."],
+  ["Lwiw → Grenze Krakiwez / Korczowa","80 km auf der M10. An der Grenze mehrere Stunden Wartezeit einplanen und die Wartezeiten vorher prüfen (Links unten). Nach der Grenze gilt wieder die Berliner Zeit: die Uhr eine Stunde zurückstellen."],
+  ["Grenze → Wartenberg","In Polen auf der A4 über Rzeszów, Kraków, Katowice und Wrocław, ab Krzyżowa auf der A18 bis zur Grenze Olszyna/Forst, dann A15, A13 und A10 bis Wartenberg. Ab der polnischen Grenze gibt es keinen Luftalarm mehr."]
  ],
  borderLinks:"Wartezeiten an der Grenze:",
  before:["Ausgangssperre in der Oblast Tschernihiw: derzeit meist 00:00–05:00 Uhr. Bei der Gemeinde oder in Telegram („Чернігівська ОВА“) prüfen, sie kann sich ändern.","Pass immer dabei haben. Kontrollen in der Stadt sind normal.","Jeden Tag kurz melden, zum Beispiel morgens und abends, und den Standort teilen.","Handy nachts laden und die App „Повітряна тривога“ mit Ton eingeschaltet lassen.","Nichts filmen oder posten, was Einschläge, Soldaten, Kontrollposten oder Infrastruktur zeigt."],
@@ -428,7 +427,7 @@ uk:{
  dsLocal:"Обрана мова і розмір шрифту зберігаються лише на вашому пристрої (localStorage). Немає cookies, сервісів статистики чи реклами. Шрифти завантажуються з самої сторінки, не з Google.",
  dsRights:"Ви маєте право на доступ, виправлення, видалення, обмеження обробки, заперечення, а також на скаргу до органу із захисту даних, у Берліні — до Берлінського уповноваженого із захисту даних і свободи інформації.",
  mark1:"Безпечно в",mark2:"Чернігові",eyebrow:"Чернігів · Чернігівська область",vOrt:"На місці",tOrt:"На місці",returnLink:"Планувати повернення",refresh:"Оновити",
- vLive:"Зараз",vZeiten:"Час",vRoute:"Маршрут",vRegeln:"Правила",tLive:"Зараз",tZeit:"Час",tRoute:"Маршрут",tRules:"Правила",
+ vLive:"Зараз",vZeiten:"Час",vRoute:"Повернення",vRegeln:"Правила",tLive:"Зараз",tZeit:"Час",tRoute:"Маршрут",tRules:"Правила",
  nowLabel:"Місто Чернігів, зараз",routeNow:"Довкола зараз",
  liveNote:"Зелений: тривоги немає. Жовтий: тривога лише в окремих районах області. Червоний: тривога. Оновлюється приблизно щохвилини і може трохи запізнюватися.",
  appWarnT:"Головне — офіційний застосунок.",appWarn:"Ця сторінка може запізнюватися. Застосунок «Повітряна тривога» зі звуком попереджає одразу.",
@@ -448,22 +447,21 @@ uk:{
  curfew:"Комендантська 00–05",legendNum:"Число від 40 %",
  src:"Джерело: офіційні дані про повітряні тривоги (набір «ukrainian-air-raid-sirens-dataset»), станом на {d}. Тривога — це попередження, не обов'язково удар. Для кожного місця враховано тривоги по всій області та по району.",
  days:["Пн","Вт","Ср","Чт","Пт","Сб","Нд"],
- planT:"Планування поїздки зі Львова",depL:"Виїзд зі Львова",car:"Авто / автобус",train:"Потяг",
+ planT:"Планування повернення з Чернігова",depL:"Виїзд з Чернігова",car:"Авто / автобус",train:"Потяг",
  planNote:"Час у дорозі орієнтовний. Відсоток: як часто за останні 90 днів о цій годині в цьому районі була тривога.",
- sumAvg:"У середньому за поїздку: <b>{p} %</b>. Прибуття до Чернігова приблизно о <b>{a}</b> (за київським часом).",
+ sumAvg:"У середньому за поїздку: <b>{p} %</b>. Прибуття до Львова приблизно о <b>{a}</b> (за київським часом), звідти ще 80 км до кордону Краковець/Корчова.",
  curfewHit:"Під час комендантської",curfewWarn:"На авто частина поїздки припадає на комендантську годину (00–05). Це заборонено.",
  best:"Найкращий виїзд: {h} (Ø {p} %)",change:"Пересадка в Києві",
- kmT:"Кілометри",kmNote:"Кілометри доріг за OpenStreetMap. Час у дорозі без зупинок і без очікування на кордоні.",kmTot:"км від Вартенберга до Чернігова",kmSub:"{a} км до українського кордону · чистий час у дорозі приблизно {h} год",border:"Кордон",zoneUA:"Зона тривог",
+ kmT:"Кілометри",kmNote:"Кілометри доріг за OpenStreetMap. Час у дорозі без зупинок і без очікування на кордоні.",kmTot:"км від Чернігова до Вартенберга",kmSub:"кордон з Польщею через {a} км · чистий час у дорозі приблизно {h} год",border:"Кордон",zoneUA:"Зона тривог",
  wayT:"Шлях",distT:"Райони Чернігівської області",alarmShare:"часу під тривогою",
  avoidT:"Не їздити",
  avoid:"У прикордонну смугу з росією та білоруссю, особливо біля Новгорода-Сіверського, Семенівки, півночі Корюківщини, Городні та Ріпок. Там обстріли та атаки FPV-дронів на автомобілі, навіть удень. Поїздки — лише в бік півдня або Києва.",
  steps:[
-  ["Вартенберг → кордон Форст","Трасами A10, A13 і A15 повз Котбус до кордону біля Форста/Ольшини, 190 км. У Польщі трасою A18 до Кшижової, далі A4 через Вроцлав, Катовіце, Краків і Ряшів до Корчови. У Польщі тривог немає. У Польщі берлінський час."],
-  ["Кордон Корчова → Краковець","Пункт пропуску для авто після 897 км, черги перевірте заздалегідь (посилання нижче). Далі 80 км трасою М10 до Львова. Після кордону київський час, переведіть годинник на годину вперед."],
-  ["Львів","Тут починається зона тривог, увімкніть застосунок. Львів страждає рідше, але під час масованих атак його вночі атакують ракетами й дронами."],
-  ["Львів → Київ","Потяг (Інтерсіті приблизно 5–7 год, через Тернопіль, Хмельницький, Вінницю) або авто трасою М06 через Рівне й Житомир (приблизно 540 км, 7–8 год). Нічні потяги їдуть і під час тривоги; так зазвичай і подорожують."],
-  ["Київ","Київ атакують переважно вночі. Якщо прибуття вночі, лишайтеся на вокзалі; вокзал і метро слугують укриттям."],
-  ["Київ → Чернігів","Потягом з Києва-Пасажирського або авто трасою М01 через Бровари й Козелець (приблизно 145 км, 2 год). Найкраще між 10 і 17 годиною."]
+  ["Чернігів → Київ","Автобусом або потягом до Києва (приблизно 2–2½ год) або авто трасою М01 через Козелець і Бровари (145 км). Найкраще виїжджати зранку: у Чернігові найспокійніше з 10 до 16, найнеспокійніше — після 19. Перед виїздом перевірте ситуацію в застосунку."],
+  ["Київ","Пересадка або коротка перерва. Київ атакують переважно вночі. Під час тривоги найкраще укриття — метро."],
+  ["Київ → Львів","Авто трасою М06 через Житомир і Рівне (приблизно 540 км, 7–8 год) або потягом (Інтерсіті 5–7 год). На авто поїздка Україною має завершитися до комендантської години о 00:00, тож виїжджайте рано."],
+  ["Львів → кордон Краковець / Корчова","80 км трасою М10. На кордоні закладіть кілька годин очікування й перевірте черги заздалегідь (посилання нижче). Після кордону знову берлінський час: переведіть годинник на годину назад."],
+  ["Кордон → Вартенберг","У Польщі трасою A4 через Ряшів, Краків, Катовіце й Вроцлав, від Кшижової — A18 до кордону Ольшина/Форст, далі A15, A13 і A10 до Вартенберга. Після польського кордону повітряних тривог більше немає."]
  ],
  borderLinks:"Черги на кордоні:",
  before:["Комендантська година в Чернігівській області: зараз здебільшого 00:00–05:00. Перевіряйте в громаді або в Telegram («Чернігівська ОВА»), вона може змінюватися.","Завжди майте при собі паспорт. Перевірки в місті — звичайна справа.","Щодня коротко виходьте на зв'язок, наприклад зранку й увечері, діліться геолокацією.","Заряджайте телефон уночі й тримайте застосунок «Повітряна тривога» зі звуком.","Не знімайте й не публікуйте влучання, військових, блокпости чи інфраструктуру."],
@@ -488,8 +486,9 @@ const HERO={live:"vLive",zeiten:"vZeiten",vorort:"vOrt",route:"vRoute",regeln:"v
 const LIVE_ORDER=["chernihiv_obl","brovary","kyiv"]; // Reise: ["lviv","rivne","zhytomyr","ternopil","khmelnytskyi","vinnytsia","kyivobl","kyiv","brovary","chernihiv_obl"]
 const STAT_AREAS=["chernihiv","kyiv","brovary"];
 const LEGS={
- car:[["lviv",1.5],["rivne",2],["zhytomyr",2.5],["kyivobl",1],["kyiv",.75],["brovary",.75],["chernihiv",1.25]],
- train:[["lviv",1],["ternopil",1.5],["khmelnytskyi",1.5],["vinnytsia",1.5],["kyivobl",1.25],["kyiv",1.5,"change"],["brovary",.75],["chernihiv",1.25]]
+ // Rückreise Tschernihiw → Lwiw (Hinreise war dieselbe Strecke in umgekehrter Richtung)
+ car:[["chernihiv",1.25],["brovary",.75],["kyiv",.75],["kyivobl",1],["zhytomyr",2.5],["rivne",2],["lviv",1.5]],
+ train:[["chernihiv",1.25],["brovary",.75],["kyiv",1.5,"change"],["kyivobl",1.25],["vinnytsia",1.5],["khmelnytskyi",1.5],["ternopil",1.5],["lviv",1]]
 };
 // road km from OSRM (OpenStreetMap): [de, uk, country, segment km, road, minutes, isBorder]
 const KM=[
@@ -510,7 +509,7 @@ const LIVE_URLS=["https://ukraine-alarm.plain-paper-0d28.workers.dev/","https://
 
 const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
 let lang=store.get("lang")||"uk";
-let view="live",area="chernihiv",period="d90",mode="train",dep=19,STATS=null,LIVE=null,liveErr=false;
+let view="live",area="chernihiv",period="d90",mode="car",dep=8,STATS=null,LIVE=null,liveErr=false;
 const $=id=>document.getElementById(id);
 const t=k=>T[lang][k];
 const fmt=(s,o)=>s.replace(/\{(\w+)\}/g,(_,k)=>o[k]);
@@ -673,21 +672,24 @@ function plan(m,d){
 }
 function renderPlan(){
   if(!STATS)return;
-  $("modeSeg").innerHTML=[["train",t("train")],["car",t("car")]].map(([k,l])=>`<button type="button" data-m="${k}" aria-pressed="${k===mode}">${l}</button>`).join("");
+  $("modeSeg").innerHTML=[["car",t("car")],["train",t("train")]].map(([k,l])=>`<button type="button" data-m="${k}" aria-pressed="${k===mode}">${l}</button>`).join("");
   $("dep").innerHTML=Array.from({length:24},(_,h)=>`<option value="${h}"${h===dep?" selected":""}>${H(h)}</option>`).join("");
   const p=plan(mode,dep);
   $("legs").innerHTML=p.rows.map(r=>`<div class="leg"><span class="t">${hh(r.start)}</span><span><b>${t("areas")[r.a]}</b>${r.ch?` <span class="muted small">· ${t("change")}</span>`:""}${mode==="car"&&r.c?`<span class="flag">${t("curfewHit")}</span>`:""}</span><span class="pct ${cls(r.r)}">${num(r.r.toFixed(0))} %</span></div>`).join("");
   $("planSum").innerHTML=fmt(t("sumAvg"),{p:num(p.avg.toFixed(1)),a:hh(p.arr)})+(p.curf?`<br><b style="color:var(--bad)">${t("curfewWarn")}</b>`:"");
   let best=null;for(let h=0;h<24;h++){const q=plan(mode,h);if(q.curf)continue;
+    if(mode==="car"&&q.arr>21)continue; // Auto: bis 21 Uhr in Lwiw, damit die 80 km zur Grenze vor der Ausgangssperre liegen
     const arrH=((q.arr%24)+24)%24;const late=mode==="train"&&(arrH<5||arrH>=22)?5:0; // avoid arriving at night
     const score=q.avg+late;if(!best||score<best.s)best={h,s:score,avg:q.avg}}
   $("bestBtn").textContent=fmt(t("best"),{h:H(best.h),p:num(best.avg.toFixed(1))});
   $("bestBtn").onclick=()=>{dep=best.h;renderPlan()};
-  $("steps").innerHTML=t("steps").map(([h,x],i)=>`<div class="step"><span class="n">${i+1}</span><div><h3>${h}</h3><p>${x}</p>${i===1?`<p class="small" style="margin-top:6px">${t("borderLinks")} <a href="https://granica.gov.pl/" target="_blank" rel="noopener">granica.gov.pl</a> · <a href="https://dpsu.gov.ua/" target="_blank" rel="noopener">dpsu.gov.ua</a></p>`:""}</div></div>`).join("");
+  $("steps").innerHTML=t("steps").map(([h,x],i)=>`<div class="step"><span class="n">${i+1}</span><div><h3>${h}</h3><p>${x}</p>${i===3?`<p class="small" style="margin-top:6px">${t("borderLinks")} <a href="https://granica.gov.pl/" target="_blank" rel="noopener">granica.gov.pl</a> · <a href="https://dpsu.gov.ua/" target="_blank" rel="noopener">dpsu.gov.ua</a></p>`:""}</div></div>`).join("");
 }
+// Rückreise: Haltepunkte umdrehen, jeder Abschnitt gehört zum Haltepunkt an seinem Ende
+const KM_RET=KM.slice().reverse().map((r,k,arr)=>k===0?[r[0],r[1],r[2],0,"",0,r[6]]:[r[0],r[1],r[2],KM[KM.length-k][3],KM[KM.length-k][4].split(" · ").reverse().join(" · "),KM[KM.length-k][5],r[6]]);
 function renderKm(){
   let cum=0,mins=0,toBorder=0;
-  const rows=KM.map(([de,uk,cc,km,road,m,b],i)=>{cum+=km;mins+=m;if(b&&cc==="pl")toBorder=cum;
+  const rows=KM_RET.map(([de,uk,cc,km,road,m,b],i)=>{cum+=km;mins+=m;if(b&&cc==="pl"&&!toBorder)toBorder=cum;
     const dur=m?`${Math.floor(m/60)}:${String(m%60).padStart(2,"0")} h`:"";
     const sub=i?`+${km} km · ${road} · ${dur}`:"";
     return `<div class="row${b?" border":""}"><span class="km">${cum.toLocaleString("de-DE")} km</span><div class="grow"><div class="name">${lang==="uk"?uk:de}</div><div class="sub">${b?t("border")+" · ":""}${sub}</div></div><span class="cc ${cc}" title="${cc==="ua"?t("zoneUA"):""}">${cc.toUpperCase()}</span></div>`});
