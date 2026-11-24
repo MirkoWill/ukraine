@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#f6f6f3">
 <meta name="robots" content="noindex, nofollow">
-<script>try{if(!localStorage.getItem("alivePin"))document.documentElement.classList.add("locked")}catch(e){document.documentElement.classList.add("locked")}</script>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self' https://ukraine-alarm.plain-paper-0d28.workers.dev https://api.github.com https://raw.githubusercontent.com; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta name="referrer" content="no-referrer">
+<script>try{if(!localStorage.getItem("authTok")&&!localStorage.getItem("alivePin"))document.documentElement.classList.add("locked")}catch(e){document.documentElement.classList.add("locked")}</script>
 <title>Безпечно в Чернігові</title>
 
 
@@ -624,7 +626,7 @@ async function initPush(){
   }catch(e){}
   renderNotif();
 }
-async function post(path,body){const r=await fetch(WORKER+path,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)});if(!r.ok)throw new Error(r.status);return r.json()}
+async function post(path,body){const r=await fetch(WORKER+path,{method:"POST",headers:{"content-type":"application/json","x-token":alivePin()},body:JSON.stringify(body)});if(!r.ok)throw new Error(r.status);return r.json()}
 const withTimeout=(pr,ms)=>Promise.race([pr,new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout")),ms))]);
 async function enablePush(){
   const b=$("nOn");if(b){b.disabled=true;b.textContent=t("notifBusy")}
@@ -658,14 +660,29 @@ function renderNotif(){
    Geschützt durch einen Zugangscode. Der Worker prüft ihn; das Handy merkt ihn sich,
    damit er nur einmal eingegeben werden muss. Der Code steht nicht im Quelltext. */
 let ALIVE=null,aliveErr=false;
-function alivePin(){return store.get("alivePin")||""}
+// Der Zugangscode wird nur einmal zum Freischalten geschickt (POST /auth). Danach nutzt das Gerät
+// nur noch einen zufälligen Geräte-Schlüssel im Header x-token; der Code wird nicht gespeichert.
+function alivePin(){return store.get("authTok")||""}
+function lockApp(){store.set("authTok","");ALIVE=null;document.documentElement.classList.add("locked")}
+async function authWithCode(code){ // -> "ok" | "wrong" | "locked" | "net"
+  try{
+    const r=await fetch(WORKER+"/auth",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({p:code}),cache:"no-store"});
+    if(r.status===429)return "locked";
+    if(r.status===403||r.status===400)return "wrong";
+    const j=await r.json().catch(()=>({}));
+    if(r.ok&&j.token){store.set("authTok",j.token);store.set("alivePin","");return "ok"}
+    return "net";
+  }catch(e){return "net"}
+}
+async function migrateOldPin(){ // ältere Fassung hat den Code gespeichert -> einmalig in Geräte-Schlüssel tauschen
+  const old=store.get("alivePin");if(!old||store.get("authTok"))return;
+  const r=await authWithCode(old);
+  if(r==="wrong"){store.set("alivePin","");lockApp()}
+  if(r==="ok"){loadAlive();initPush()}
+}
 async function aliveFetch(method){
-  const pin=alivePin();
-  const r=method==="POST"
-    ?await fetch(WORKER+"/alive",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({p:pin})})
-    :await fetch(WORKER+"/alive?p="+encodeURIComponent(pin)+"&t="+Date.now(),{cache:"no-store"});
-  if(r.status===403){store.set("alivePin","");ALIVE=null;document.documentElement.classList.add("locked");renderAlive();throw "pin"}
-  if(r.status===429){toast(t("pinLocked"));throw "locked"}
+  const r=await fetch(WORKER+"/alive"+(method==="GET"?"?t="+Date.now():""),{method,headers:{"x-token":alivePin()},cache:"no-store"});
+  if(r.status===401){lockApp();renderAlive();throw "pin"}
   if(!r.ok)throw r.status;
   return r.json();
 }
@@ -681,8 +698,9 @@ async function pressAlive(){
 }
 async function unlockAlive(){
   const v=($("pinIn").value||"").trim();if(!v)return;
-  store.set("alivePin",v);
-  try{ALIVE=await aliveFetch("GET");aliveErr=false;renderAlive();toast(t("pinOk"))}catch(e){if(e!=="pin"&&e!=="locked"){toast(t("aliveErr"));store.set("alivePin","");renderAlive()}}
+  const r=await authWithCode(v);
+  if(r==="ok"){toast(t("pinOk"));document.documentElement.classList.remove("locked");loadAlive()}
+  else toast(t(r==="locked"?"pinLocked":r==="wrong"?"pinWrong":"aliveErr"));
 }
 function fmtAgo(min){if(min<60)return min+" "+t("minShort");const h=Math.floor(min/60),m=min%60;return h+" "+t("hShort")+(m?" "+m+" "+t("minShort"):"")}
 function renderAlive(){
@@ -951,15 +969,14 @@ window.addEventListener("online",loadLive);window.addEventListener("offline",()=
 $("gateForm").onsubmit=async e=>{
   e.preventDefault();const v=$("gateIn").value.trim();if(!v)return;
   $("gateBtn").disabled=true;$("gateErr").textContent="";
-  try{
-    const r=await fetch(WORKER+"/alive?p="+encodeURIComponent(v)+"&t="+Date.now(),{cache:"no-store"});
-    if(r.ok){store.set("alivePin",v);ALIVE=await r.json();document.documentElement.classList.remove("locked");renderAlive();loadLive();window.scrollTo(0,0)}
-    else if(r.status===429)$("gateErr").textContent="Забагато спроб, спробуйте через годину / Zu viele Versuche, bitte in einer Stunde";
-    else $("gateErr").textContent="Код неправильний / Неверный код / Code falsch";
-  }catch(err){$("gateErr").textContent="Немає з'єднання / Keine Verbindung"}
+  const r=await authWithCode(v);
+  if(r==="ok"){$("gateIn").value="";document.documentElement.classList.remove("locked");loadAlive();loadLive();initPush();window.scrollTo(0,0)}
+  else if(r==="locked")$("gateErr").textContent="Забагато спроб, спробуйте через годину / Слишком много попыток / Zu viele Versuche, bitte in einer Stunde";
+  else if(r==="wrong")$("gateErr").textContent="Код неправильний / Неверный код / Code falsch";
+  else $("gateErr").textContent="Немає з'єднання / Нет соединения / Keine Verbindung";
   $("gateBtn").disabled=false;
 };
-applyText();route();loadLive();loadAlive();renderKm();initPush();saveLang();
+applyText();route();loadLive();loadAlive();renderKm();initPush();saveLang();migrateOldPin();
 fetch("data/stats.json").then(r=>r.json()).then(d=>{STATS=d;renderStats()}).catch(()=>{$("srcNote").textContent="data/stats.json?"});
 </script>
 </body>
