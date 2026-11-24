@@ -8,17 +8,18 @@
 // POST /test        Test-Benachrichtigung senden  { endpoint }
 // GET  /event?f=…   letztes Ereignis (Alarm, Entwarnung, Tageszusammenfassung oder Lebenszeichen
 //                   der eigenen Familie f), liest der Service Worker beim Push
-// POST /family      Familie, Name und Tageszusammenfassung zu einem Abo speichern
-//                   { endpoint, family, name, daily }
-// POST /ok          Lebenszeichen an die anderen Handys der Familie  { endpoint }
-// GET  /alive?p=…   Zeitpunkt der letzten Bestätigung „Mir geht’s gut“ (p = Zugangscode)
-// POST /alive       „Mir geht’s gut“ bestätigen  { p }
+// POST /auth        Gerät mit dem Zugangscode freischalten  { p } -> { token }
+//                   Danach schickt das Gerät nur noch den zufälligen Geräte-Schlüssel (Header x-token),
+//                   nie mehr den Code. Nach 20 Fehlversuchen insgesamt ist das Freischalten neuer
+//                   Geräte eine Stunde gesperrt; freigeschaltete Geräte funktionieren weiter.
+// GET  /alive       Zeitpunkt der letzten Bestätigung „Mir geht’s gut“ (Header x-token)
+// POST /alive       „Mir geht’s gut“ bestätigen (Header x-token)
 // GET  /tg/setup    Telegram-Bot einmalig mit diesem Worker verbinden (Webhook setzen)
 // POST /tg          Nachrichten von Telegram (nur mit geheimem Header, den Telegram mitschickt)
 //                   Bot-Schlüssel als Secret TG_TOKEN in Cloudflare, nie im Quelltext.
 // POST /alive/pin   Zugangscode einmalig festlegen (nur solange noch keiner gespeichert ist)  { p }
 //                   Der Code steht nicht im Quelltext, im KV liegt nur sein SHA-256.
-//                   Nach 10 falschen Versuchen pro IP ist eine Stunde lang gesperrt.
+// Push-Abos (/subscribe, /unsubscribe, /test) nur mit Geräte-Schlüssel und nur an bekannte Push-Dienste.
 //
 // Quelle: siren.pp.ua (mit Bezirken und Gemeinden), Ersatz: ubilling.net.ua (nur Oblaste).
 //
@@ -66,7 +67,7 @@ const HEADERS = {
   "content-type": "application/json; charset=utf-8",
   "access-control-allow-origin": "*",
   "access-control-allow-methods": "GET, POST, OPTIONS",
-  "access-control-allow-headers": "content-type",
+  "access-control-allow-headers": "content-type, x-token",
   "cache-control": "public, max-age=20",
 };
 const json = (obj, status = 200, extra = {}) =>
@@ -356,13 +357,9 @@ async function tgHandle(env, upd) {
   const known = await kv(env).get("tgchat:" + chat);
   if (!known) {
     if (!text || text.startsWith("/")) return send(T.askCode);
-    const failKey = "tgfail:" + chat;
-    const fails = Number((await kv(env).get(failKey)) || 0);
-    if (fails >= 10) return send(T.locked);
-    if ((await subId("pin:" + text)) !== (await kv(env).get("alivePin"))) {
-      await kv(env).put(failKey, String(fails + 1), { expirationTtl: 3600 });
-      return send(T.wrong);
-    }
+    const r = await checkPin(env, text);
+    if (r === "locked") return send(T.locked);
+    if (r !== "ok") return send(T.wrong);
     await kv(env).put("tgchat:" + chat, JSON.stringify({ t: Date.now() }));
     return send(T.welcome, tgKeyboard(T));
   }
@@ -373,6 +370,30 @@ async function tgHandle(env, upd) {
   }
   return send(await tgStatus(env, T), tgKeyboard(T));
 }
+
+// ---------- Zugang: Code einmal pro Gerät, danach Geräte-Schlüssel ----------
+const PIN_FAIL_MAX = 20; // Fehlversuche insgesamt je Stunde (begrenzt auch die KV-Schreibvorgänge)
+async function checkPin(env, p) {
+  if (typeof p !== "string" || !/^[0-9A-Za-z]{4,32}$/.test(p)) return "bad";
+  const fails = Number((await kv(env).get("pinfail")) || 0);
+  if (fails >= PIN_FAIL_MAX) return "locked";
+  const stored = await kv(env).get("alivePin");
+  if (stored && stored === (await subId("pin:" + p))) return "ok";
+  await kv(env).put("pinfail", String(fails + 1), { expirationTtl: 3600 });
+  return "wrong";
+}
+async function newDeviceToken(env) {
+  const tok = b64u(crypto.getRandomValues(new Uint8Array(24)));
+  await kv(env).put("tok:" + (await subId("tok:" + tok)), JSON.stringify({ t: Date.now() }));
+  return tok;
+}
+async function tokenOk(env, request) {
+  const tok = request.headers.get("x-token") || "";
+  if (!/^[A-Za-z0-9_-]{20,64}$/.test(tok)) return false;
+  return !!(await kv(env).get("tok:" + (await subId("tok:" + tok))));
+}
+// nur echte Push-Dienste der Browser (Chrome/Android, Firefox, Safari/iOS, Edge)
+const PUSH_HOST = /^(fcm\.googleapis\.com|updates\.push\.services\.mozilla\.com|web\.push\.apple\.com|[a-z0-9-]+\.push\.apple\.com|[a-z0-9-]+\.notify\.windows\.com)$/;
 
 // ---------- Handler ----------
 export default {
@@ -387,6 +408,8 @@ export default {
     if (path === "/tg/setup") {
       if (!env.TG_TOKEN || !kv(env)) return json({ error: "TG_TOKEN oder KV fehlt" }, 503);
       const url = new URL(request.url);
+      const info = await tgCall(env, "getWebhookInfo", {});
+      if (info.result && info.result.url === url.origin + "/tg") return json({ ok: true, telegram: "Webhook is already set" }, 200, { "cache-control": "no-store" });
       const r = await tgCall(env, "setWebhook", { url: url.origin + "/tg", secret_token: await tgSecret(env), allowed_updates: ["message"], drop_pending_updates: true });
       await tgCall(env, "setMyCommands", { commands: [{ command: "status", description: "Статус / Status" }, { command: "ok", description: "✓ Все гаразд / Alles gut" }] });
       return json({ ok: !!r.ok, telegram: r.description || "" }, 200, { "cache-control": "no-store" });
@@ -399,72 +422,55 @@ export default {
       try { await tgHandle(env, upd); } catch (e) {}
       return new Response("ok");
     }
-    if (path === "/alive" || path === "/alive/pin") {
+    if (path === "/auth" && request.method === "POST") {
       if (!kv(env)) return json({ error: "Kein KV-Speicher verbunden" }, 503);
       const nostore = { "cache-control": "no-store" };
-      let p = new URL(request.url).searchParams.get("p");
-      if (request.method === "POST") {
-        try { p = (await request.json()).p; } catch (e) { p = null; }
-      }
+      let p = null;
+      try { p = (await request.json()).p; } catch (e) {}
+      const r = await checkPin(env, p);
+      if (r === "ok") return json({ token: await newDeviceToken(env) }, 200, nostore);
+      if (r === "locked") return json({ error: "Zu viele Versuche, bitte in einer Stunde wieder" }, 429, nostore);
+      return json({ error: "Code falsch" }, r === "bad" ? 400 : 403, nostore);
+    }
+    if (path === "/alive/pin" && request.method === "POST") {
+      if (!kv(env)) return json({ error: "Kein KV-Speicher verbunden" }, 503);
+      const nostore = { "cache-control": "no-store" };
+      if (await kv(env).get("alivePin")) return json({ error: "Code ist schon festgelegt" }, 409, nostore);
+      let p = null;
+      try { p = (await request.json()).p; } catch (e) {}
       if (typeof p !== "string" || !/^[0-9A-Za-z]{4,32}$/.test(p)) return json({ error: "Code fehlt" }, 400, nostore);
-      const hash = await subId("pin:" + p);
-      const stored = await kv(env).get("alivePin");
-      if (path === "/alive/pin") {
-        if (stored) return json({ error: "Code ist schon festgelegt" }, 409, nostore);
-        await kv(env).put("alivePin", hash);
-        return json({ ok: true }, 200, nostore);
-      }
-      const ip = request.headers.get("cf-connecting-ip") || "?";
-      const failKey = "fail:" + ip;
-      const fails = Number((await kv(env).get(failKey)) || 0);
-      if (fails >= 10) return json({ error: "Zu viele Versuche, bitte in einer Stunde wieder" }, 429, nostore);
-      if (!stored || stored !== hash) {
-        await kv(env).put(failKey, String(fails + 1), { expirationTtl: 3600 });
-        return json({ error: "Code falsch" }, 403, nostore);
-      }
+      await kv(env).put("alivePin", await subId("pin:" + p));
+      return json({ ok: true }, 200, nostore);
+    }
+    if (path === "/alive") {
+      if (!kv(env)) return json({ error: "Kein KV-Speicher verbunden" }, 503);
+      const nostore = { "cache-control": "no-store" };
+      if (!(await tokenOk(env, request))) return json({ error: "Gerät nicht freigeschaltet" }, 401, nostore);
       // { at: letzte Bestätigung, list: alle Bestätigungen der letzten 24 Stunden }
-      const last = await kv(env).get("alive:main", "json");
       if (request.method === "POST") return json(await confirmAlive(env), 200, nostore);
+      const last = await kv(env).get("alive:main", "json");
       if (last && last.list) last.list = last.list.filter((x) => Date.now() - Date.parse(x) < DAY);
       return json(last || {}, 200, nostore);
     }
     if (path === "/event") {
       if (!kv(env)) return json({}, 200, { "cache-control": "no-store" });
-      const f = new URL(request.url).searchParams.get("f");
       const list = [await kv(env).get("event", "json"), await kv(env).get("daily", "json")];
-      if (f && /^[A-Z0-9-]{6,20}$/.test(f)) list.push(await kv(env).get("fam:" + f, "json"));
       const newest = list.filter(Boolean).sort((a, b) => Date.parse(b.at) - Date.parse(a.at))[0];
       return json(newest || {}, 200, { "cache-control": "no-store" });
     }
-    if (request.method === "POST" && ["/subscribe", "/unsubscribe", "/test", "/family", "/ok"].includes(path)) {
+    if (request.method === "POST" && ["/subscribe", "/unsubscribe", "/test"].includes(path)) {
       if (!kv(env)) return json({ error: "Kein KV-Speicher verbunden" }, 503);
+      if (!(await tokenOk(env, request))) return json({ error: "Gerät nicht freigeschaltet" }, 401);
       let body;
       try { body = await request.json(); } catch (e) { return json({ error: "Ungültige Anfrage" }, 400); }
       const endpoint = (body.subscription && body.subscription.endpoint) || body.endpoint;
-      if (!endpoint || !/^https:\/\//.test(endpoint)) return json({ error: "Ungültiges Abo" }, 400);
+      let host = "";
+      try { host = new URL(endpoint).hostname; } catch (e) {}
+      if (!/^https:\/\//.test(endpoint || "") || !PUSH_HOST.test(host)) return json({ error: "Ungültiges Abo" }, 400);
       const id = "sub:" + (await subId(endpoint));
       if (path === "/subscribe") {
         const old = (await kv(env).get(id, "json")) || {};
-        await kv(env).put(id, JSON.stringify({ ...old, endpoint, lang: body.lang === "de" ? "de" : "uk", t: Date.now() }));
-        return json({ ok: true });
-      }
-      if (path === "/family") {
-        const s = await kv(env).get(id, "json");
-        if (!s) return json({ error: "Abo nicht gefunden" }, 404);
-        const fam = typeof body.family === "string" && /^[A-Z0-9-]{6,20}$/.test(body.family) ? body.family : null;
-        s.family = fam;
-        s.name = String(body.name || "").slice(0, 30);
-        s.daily = !!body.daily;
-        await kv(env).put(id, JSON.stringify(s));
-        return json({ ok: true });
-      }
-      if (path === "/ok") {
-        const s = await kv(env).get(id, "json");
-        if (!s || !s.family) return json({ error: "Keine Familie verbunden" }, 400);
-        const last = await kv(env).get("fam:" + s.family, "json");
-        if (last && Date.now() - Date.parse(last.at) < 30000) return json({ error: "Bitte kurz warten" }, 429);
-        await kv(env).put("fam:" + s.family, JSON.stringify({ kind: "ok", at: new Date().toISOString(), name: s.name || "" }));
-        ctx.waitUntil(pushAll(env, (x) => x.family === s.family && x.endpoint !== s.endpoint));
+        await kv(env).put(id, JSON.stringify({ ...old, endpoint, lang: ["de", "ru"].includes(body.lang) ? body.lang : "uk", t: Date.now() }));
         return json({ ok: true });
       }
       if (path === "/unsubscribe") {
