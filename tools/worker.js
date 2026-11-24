@@ -6,13 +6,19 @@
 // POST /subscribe   Push-Abo speichern            { subscription, lang }
 // POST /unsubscribe Push-Abo löschen              { endpoint }
 // POST /test        Test-Benachrichtigung senden  { endpoint }
-// GET  /event       letztes Ereignis (Alarm/Entwarnung), liest der Service Worker beim Push
+// GET  /event?f=…   letztes Ereignis (Alarm, Entwarnung, Tageszusammenfassung oder Lebenszeichen
+//                   der eigenen Familie f), liest der Service Worker beim Push
+// POST /family      Familie, Name und Tageszusammenfassung zu einem Abo speichern
+//                   { endpoint, family, name, daily }
+// POST /ok          Lebenszeichen an die anderen Handys der Familie  { endpoint }
 //
 // Quelle: siren.pp.ua (mit Bezirken und Gemeinden), Ersatz: ubilling.net.ua (nur Oblaste).
 //
 // Eine Zeitsteuerung (Cron, jede Minute) schreibt Beginn und Ende jedes Alarms für die Stadt
 // in den KV-Speicher ("HIST" oder "Ukraine") und schickt dabei Push-Nachrichten an alle Abos.
 // Die Push-Nachrichten sind leer (ohne Inhalt); der Service Worker holt den Text über /event.
+// Um 8:00 Uhr Kyjiwer Zeit geht eine Zusammenfassung der letzten 24 Stunden an alle Abos,
+// die sie eingeschaltet haben.
 // Den Schlüssel für Push (VAPID) erzeugt der Worker beim ersten Bedarf selbst und legt ihn im KV ab.
 
 // Schwellen aus den offiziellen Alarmdaten der letzten 90 Tage (Alarmstunden in 24 Std.):
@@ -221,14 +227,15 @@ async function subId(endpoint) {
   return b64u(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(endpoint))).slice(0, 32);
 }
 
-async function pushAll(env) {
+// Push an alle Abos, für die want(abo) zutrifft
+async function pushAll(env, want = () => true) {
   const v = await getVapid(env);
   let cursor;
   do {
     const page = await kv(env).list({ prefix: "sub:", cursor });
     for (const k of page.keys) {
       const s = await kv(env).get(k.name, "json");
-      if (!s) continue;
+      if (!s || !want(s)) continue;
       try {
         const status = await sendPush(s.endpoint, v);
         if (status === 404 || status === 410) await kv(env).delete(k.name); // Abo existiert nicht mehr
@@ -249,10 +256,14 @@ export default {
       return json({ key: (await getVapid(env)).pub }, 200, { "cache-control": "no-store" });
     }
     if (path === "/event") {
-      const e = kv(env) ? await kv(env).get("event", "json") : null;
-      return json(e || {}, 200, { "cache-control": "no-store" });
+      if (!kv(env)) return json({}, 200, { "cache-control": "no-store" });
+      const f = new URL(request.url).searchParams.get("f");
+      const list = [await kv(env).get("event", "json"), await kv(env).get("daily", "json")];
+      if (f && /^[A-Z0-9-]{6,20}$/.test(f)) list.push(await kv(env).get("fam:" + f, "json"));
+      const newest = list.filter(Boolean).sort((a, b) => Date.parse(b.at) - Date.parse(a.at))[0];
+      return json(newest || {}, 200, { "cache-control": "no-store" });
     }
-    if (request.method === "POST" && ["/subscribe", "/unsubscribe", "/test"].includes(path)) {
+    if (request.method === "POST" && ["/subscribe", "/unsubscribe", "/test", "/family", "/ok"].includes(path)) {
       if (!kv(env)) return json({ error: "Kein KV-Speicher verbunden" }, 503);
       let body;
       try { body = await request.json(); } catch (e) { return json({ error: "Ungültige Anfrage" }, 400); }
@@ -260,7 +271,27 @@ export default {
       if (!endpoint || !/^https:\/\//.test(endpoint)) return json({ error: "Ungültiges Abo" }, 400);
       const id = "sub:" + (await subId(endpoint));
       if (path === "/subscribe") {
-        await kv(env).put(id, JSON.stringify({ endpoint, lang: body.lang === "de" ? "de" : "uk", t: Date.now() }));
+        const old = (await kv(env).get(id, "json")) || {};
+        await kv(env).put(id, JSON.stringify({ ...old, endpoint, lang: body.lang === "de" ? "de" : "uk", t: Date.now() }));
+        return json({ ok: true });
+      }
+      if (path === "/family") {
+        const s = await kv(env).get(id, "json");
+        if (!s) return json({ error: "Abo nicht gefunden" }, 404);
+        const fam = typeof body.family === "string" && /^[A-Z0-9-]{6,20}$/.test(body.family) ? body.family : null;
+        s.family = fam;
+        s.name = String(body.name || "").slice(0, 30);
+        s.daily = !!body.daily;
+        await kv(env).put(id, JSON.stringify(s));
+        return json({ ok: true });
+      }
+      if (path === "/ok") {
+        const s = await kv(env).get(id, "json");
+        if (!s || !s.family) return json({ error: "Keine Familie verbunden" }, 400);
+        const last = await kv(env).get("fam:" + s.family, "json");
+        if (last && Date.now() - Date.parse(last.at) < 30000) return json({ error: "Bitte kurz warten" }, 429);
+        await kv(env).put("fam:" + s.family, JSON.stringify({ kind: "ok", at: new Date().toISOString(), name: s.name || "" }));
+        ctx.waitUntil(pushAll(env, (x) => x.family === s.family && x.endpoint !== s.endpoint));
         return json({ ok: true });
       }
       if (path === "/unsubscribe") {
@@ -289,9 +320,19 @@ export default {
   async scheduled(event, env, ctx) {
     const [areas] = await getAreas();
     const transition = await record(env, areas.chernihiv_city);
-    if (transition && kv(env)) {
+    if (!kv(env)) return;
+    if (transition) {
       await kv(env).put("event", JSON.stringify({ kind: transition, at: new Date().toISOString(), scope: areas.chernihiv_city.scope || null }));
       await pushAll(env);
+    }
+    // Tageszusammenfassung um 8:00 Uhr Kyjiwer Zeit (einmal pro Tag)
+    const kyiv = new Date().toLocaleString("sv-SE", { timeZone: "Europe/Kyiv" }); // "2026-11-24 08:00:12"
+    const [day, time] = kyiv.split(" ");
+    if (time >= "08:00" && time < "08:10" && (await kv(env).get("dailySent")) !== day) {
+      await kv(env).put("dailySent", day);
+      const sum = last24(await readHist(env));
+      await kv(env).put("daily", JSON.stringify({ kind: "daily", at: new Date().toISOString(), ...(sum || {}) }));
+      await pushAll(env, (s) => s.daily);
     }
   },
 };

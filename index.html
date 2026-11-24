@@ -139,6 +139,13 @@ table.heat td{width:24px;min-width:24px;height:24px;border-radius:4px;text-align
 .cc{font-size:.75rem;font-weight:700;letter-spacing:.06em;border-radius:999px;padding:2px 8px;border:1.5px solid currentColor}
 .cc.ua{color:var(--bad)} .cc.pl,.cc.de{color:var(--ok)}
 .em{font-size:1.6rem;font-weight:700;color:var(--bad);text-decoration:none;min-width:64px;font-variant-numeric:tabular-nums}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:.95rem;cursor:pointer}
+.check input{width:20px;height:20px;margin-top:2px;accent-color:var(--olive);flex:none}
+.fam{display:flex;flex-direction:column;gap:12px}
+.fam input[type=text]{font:inherit;font-size:1rem;border:1.5px solid var(--olive);border-radius:12px;padding:9px 12px;background:var(--surface);color:var(--ink);width:100%;min-width:0}
+.fam label{font-size:.9rem;color:var(--muted);display:flex;flex-direction:column;gap:4px}
+.famcode{font-size:1.5rem;font-weight:700;letter-spacing:.12em;font-variant-numeric:tabular-nums}
+.btn.big{font-size:1.15rem;padding:14px 18px;justify-content:center;width:100%}
 .flag{display:inline-block;font-size:.78rem;font-weight:700;color:var(--bad);margin-left:6px}
 
 ul.rules{margin:0;padding-left:1.15em;display:flex;flex-direction:column;gap:9px}
@@ -217,7 +224,13 @@ nav.tabs a[aria-current="page"]{color:var(--olive)}
     <h3 data-i="notifT">Benachrichtigungen</h3>
     <p id="notifText" class="small"></p>
     <div class="select-row" id="notifBtns"></div>
+    <label class="check" id="dailyRow" hidden><input type="checkbox" id="dailyChk"> <span data-i="dailyL">Tägliche Zusammenfassung</span></label>
     <p id="notifHint" class="small muted"></p>
+  </div>
+  <div class="card" id="famCard">
+    <h3 data-i="famT">Familie</h3>
+    <p class="small" id="famIntro"></p>
+    <div id="famBody" class="fam"></div>
   </div>
   <div class="card">
     <h3 data-i="routeNow">Strecke jetzt</h3>
@@ -348,6 +361,8 @@ nav.tabs a[aria-current="page"]{color:var(--olive)}
   <p data-i="dsHost">Die Seite liegt bei GitHub Pages (GitHub, Inc., USA). Beim Aufruf verarbeitet GitHub technisch notwendige Daten wie die IP-Adresse, um die Seite auszuliefern und vor Missbrauch zu schützen (Art. 6 Abs. 1 lit. f DSGVO). GitHub ist unter dem EU-US Data Privacy Framework zertifiziert.</p>
   <h2 data-i="dsH3">Live-Status</h2>
   <p data-i="dsLive">Für den Live-Status lädt die Seite alle zwei Minuten eine Datei von api.github.com bzw. raw.githubusercontent.com (ebenfalls GitHub). Dabei wird Ihre IP-Adresse an GitHub übertragen. Es werden keine Angaben über Sie oder Ihren Standort gesendet.</p>
+  <h2 data-i="dsH6">Benachrichtigungen und Familie</h2>
+  <p data-i="dsPush"></p>
   <h2 data-i="dsH4">Im Browser gespeichert</h2>
   <p data-i="dsLocal">Gewählte Sprache und Schriftgröße werden nur auf Ihrem Gerät gespeichert (localStorage). Es gibt keine Cookies, keine Statistik- oder Werbedienste. Schriften werden von dieser Seite selbst geladen, nicht von Google.</p>
   <h2 data-i="dsH5">Ihre Rechte</h2>
@@ -384,9 +399,9 @@ de:{
  footT:"Sicher in Tschernihiw",footBy:"Ein Service von",impT:"Impressum",dsT:"Datenschutz",impH1:"Angaben gemäß §\u00a05 DDG",impOwner:"Inh. Mirko Willbrandt",impFound:"Unternehmen in Gründung",impContact:"Kontakt",impTel:"Telefon",impMail:"E-Mail",impNotes:"Hinweise",
  impN1:"Diese Seite ist ein unentgeltliches Hilfsangebot für Reisende nach Tschernihiw. Alle Angaben ohne Gewähr. Die Statistik beruht auf vergangenen Luftalarmen und sagt keine Angriffe voraus. Der Live-Status kann verspätet oder unvollständig sein. Maßgeblich sind allein die offiziellen Warnungen der ukrainischen Behörden, insbesondere die App „Повітряна тривога“.",
  impN2:"Für die Inhalte verlinkter externer Seiten sind ausschließlich deren Betreiber verantwortlich.",
- dsH1:"Verantwortlich",dsH2:"Hosting",dsH3:"Live-Status",dsH4:"Im Browser gespeichert",dsH5:"Ihre Rechte",
+ dsH1:"Verantwortlich",dsH2:"Hosting",dsH3:"Live-Status",dsH4:"Im Browser gespeichert",dsH6:"Benachrichtigungen und Familie",dsPush:"Der Live-Status kommt von einem Dienst bei Cloudflare (Cloudflare, Inc., USA, zertifiziert unter dem EU-US Data Privacy Framework); dabei sieht Cloudflare Ihre IP-Adresse. Nur wenn Sie Benachrichtigungen einschalten, speichert dieser Dienst die Push-Adresse Ihres Browsers, Ihre Sprache, ob Sie die Tageszusammenfassung möchten und, falls Sie eine Familie verbinden, den Familien-Code und den eingetragenen Namen. Zugestellt werden die Benachrichtigungen über den Push-Dienst Ihres Browsers (bei Chrome: Google). Die Nachrichten enthalten selbst keinen Text. Rechtsgrundlage ist Ihre Einwilligung (Art. 6 Abs. 1 lit. a DSGVO). Mit „Ausschalten“ bzw. „Verbindung lösen“ werden die Angaben gelöscht bzw. entfernt.",dsH5:"Ihre Rechte",
  dsHost:"Die Seite liegt bei GitHub Pages (GitHub, Inc., USA). Beim Aufruf verarbeitet GitHub technisch notwendige Daten wie die IP-Adresse, um die Seite auszuliefern und vor Missbrauch zu schützen (Art. 6 Abs. 1 lit. f DSGVO). GitHub ist unter dem EU-US Data Privacy Framework zertifiziert.",
- dsLive:"Für den Live-Status lädt die Seite alle zwei Minuten eine Datei von api.github.com bzw. raw.githubusercontent.com (ebenfalls GitHub). Dabei wird Ihre IP-Adresse an GitHub übertragen. Es werden keine Angaben über Sie oder Ihren Standort gesendet.",
+ dsLive:"Für den Live-Status fragt die Seite jede Minute den Dienst bei Cloudflare (siehe unten), ersatzweise eine Datei bei GitHub (api.github.com, raw.githubusercontent.com). Dabei wird Ihre IP-Adresse übertragen. Angaben über Sie oder Ihren Standort werden nicht gesendet.",
  dsLocal:"Gewählte Sprache und Schriftgröße werden nur auf Ihrem Gerät gespeichert (localStorage). Es gibt keine Cookies, keine Statistik- oder Werbedienste. Schriften werden von dieser Seite selbst geladen, nicht von Google.",
  dsRights:"Sie haben das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Widerspruch sowie Beschwerde bei einer Datenschutz-Aufsichtsbehörde, in Berlin bei der Berliner Beauftragten für Datenschutz und Informationsfreiheit.",
  mark1:"Sicher in",mark2:"Tschernihiw",eyebrow:"Чернігів · Чернігівська область",vOrt:"Vor Ort",tOrt:"Vor Ort",returnLink:"Rückreise planen",refresh:"Aktualisieren",
@@ -395,7 +410,7 @@ de:{
  liveNote:"Grün: kein Alarm. Gelb: Alarm nur in einzelnen Bezirken der Oblast. Rot: Alarm. Wird etwa jede Minute aktualisiert und kann kurz hinterherhinken.",
  appWarnT:"Maßgeblich ist die offizielle App.",appWarn:"Diese Seite kann verspätet sein. Die App „Повітряна тривога“ mit Ton warnt sofort.",
  linksT:"Live-Quellen",l1:"Karte aller Alarme nach Bezirk",l2:"Offizielle Alarm-App mit Ton",l3:"Staatliche Alarm-Karte",l4:"Frontverlauf und Grenzgebiete",
- subscribe:"In der App „Повітряна тривога“ Чернігів abonnieren, für die Familie in Deutschland wichtig: Ton an lassen. In Telegram den Kanal „Чернігівська ОВА“ abonnieren, dort stehen Meldungen zu Angriffen und Abschaltungen.",
+ subscribe:"In der App „Повітряна тривога“ Чернігів abonnieren und den Ton eingeschaltet lassen. In Telegram den Kanal „Чернігівська ОВА“ abonnieren, dort stehen Meldungen zu Angriffen und Abschaltungen.",
  stAlert:"Luftalarm",stPartial:"Alarm in Teilen der Oblast",stClear:"Kein Alarm",stUnknown:"Status unbekannt",
  since:"seit",stand:"Stand",updatedNow:"Aktualisiert · Stand {s}",ago:"vor {n} Min.",loading:"wird geladen …",stale:"Daten älter als 20 Minuten. Bitte die App nutzen.",
  dayLabel:"Tschernihiw, letzte 24 Stunden",dayQuiet:"ruhig",dayNormal:"normal",dayBusy:"unruhig",dayCollect:"wird gesammelt",
@@ -408,7 +423,15 @@ de:{
  notifDenied:"Benachrichtigungen sind im Browser blockiert. In den Website-Einstellungen des Browsers für diese Seite erlauben.",
  notifNo:"Dieser Browser unterstützt keine Benachrichtigungen.",
  notifIOS:"Auf dem iPhone: zuerst über „Teilen“ → „Zum Home-Bildschirm“ hinzufügen, die App von dort öffnen und hier einschalten.",
- notifQuiet:"Der Browser hat nicht nachgefragt. Auf das Symbol links neben der Adresse tippen → Berechtigungen → Benachrichtigungen erlauben. Unter Android auch prüfen: Einstellungen → Apps → Chrome → Benachrichtigungen an.",nbarText:"Bei Alarm in Tschernihiw benachrichtigen",nbarHow:"So geht’s",notifEnable:"Einschalten",notifBusy:"wird eingeschaltet …",notifTest:"Test senden",notifDisable:"Ausschalten",notifSent:"Test gesendet, kommt in wenigen Sekunden.",notifErr:"Hat nicht geklappt. Bitte später noch einmal versuchen.",
+ notifQuiet:"Der Browser hat nicht nachgefragt. Auf das Symbol links neben der Adresse tippen → Berechtigungen → Benachrichtigungen erlauben. Unter Android auch prüfen: Einstellungen → Apps → Chrome → Benachrichtigungen an.",nbarText:"Bei Alarm in Tschernihiw benachrichtigen",
+ dailyL:"Jeden Morgen um 8 Uhr (Kyjiwer Zeit) eine Zusammenfassung der letzten 24 Stunden",
+ famT:"Familie",famNeedPush:"Zuerst oben die Benachrichtigungen einschalten. Danach lassen sich die Handys der Familie verbinden.",
+ famIntro:"Verbindet eure Handys. Dann kann jede Person mit einem Tipp melden, dass alles in Ordnung ist, und die anderen bekommen sofort eine Benachrichtigung.",
+ famName:"Dein Name (sehen die anderen)",famNew:"Neue Familie anlegen",famJoin:"Code eingeben",famJoinBtn:"Verbinden",famCodeL:"Familien-Code",
+ famCodeHint:"Diesen Code auf dem anderen Handy unter „Code eingeben“ eintragen. Nicht öffentlich teilen.",
+ famOk:"Mir geht’s gut",famOkSent:"Gesendet. Die Familie wird benachrichtigt.",famWait:"Gerade erst gesendet. Bitte kurz warten.",famLeave:"Verbindung lösen",
+ famCopy:"Kopieren",famCopied:"Kopiert",famBadCode:"Der Code passt nicht. Er sieht so aus: ABCDE-FGHJK",famNameMissing:"Bitte zuerst deinen Namen eintragen.",
+ offline:"offline, letzter bekannter Stand",nbarHow:"So geht’s",notifEnable:"Einschalten",notifBusy:"wird eingeschaltet …",notifTest:"Test senden",notifDisable:"Ausschalten",notifSent:"Test gesendet, kommt in wenigen Sekunden.",notifErr:"Hat nicht geklappt. Bitte später noch einmal versuchen.",
  notifHint:"Ersetzt nicht die App „Повітряна тривога“, die direkt vom Staat warnt. Diese Benachrichtigung kann bis zu einer Minute später kommen.",
  failed:"Live-Status gerade nicht abrufbar. Bitte die App oder alerts.in.ua nutzen.",typeART:"Artilleriegefahr",
  zLead:"Wie oft war zu welcher Uhrzeit Luftalarm? Kyjiwer Zeit, eine Stunde später als in Berlin.",
@@ -447,7 +470,7 @@ de:{
  afterT:"Nach einem Einschlag",
  after:["Nicht hingehen und nicht schauen. Oft folgt ein zweiter Schlag auf dieselbe Stelle.","Bei Verletzten 103 anrufen, bei Feuer oder Trümmern 101.","Keine Fotos oder Videos veröffentlichen. Das ist verboten und hilft dem Gegner.","Sich kurz bei der Familie melden, dass alles in Ordnung ist."],
  powerT:"Strom und Vorrat",
- power:["Geplante Stromabschaltungen sind möglich. Die Zeiten veröffentlicht der Netzbetreiber „Чернігівобленерго“ auf seiner Seite und in Telegram.","Powerbanks immer geladen halten, dazu Taschenlampe und Batterien.","Wasser für 2–3 Tage, haltbare Lebensmittel, Bargeld in Hrywnja.","Bei längeren Ausfällen bieten „Пункти незламності“ Wärme, Strom und Internet. Die Standorte stehen u. a. in der App „Дія“.","Im Winter: warme Decken bereithalten, den Gasherd nie zum Heizen benutzen."],
+ power:["Geplante Stromabschaltungen sind möglich. Die Zeiten veröffentlicht der Netzbetreiber „Чернігівобленерго“ auf seiner Webseite und bei Facebook. Hotline (kostenlos): 0 800 210 310. Dort erfährt man auch die Abschaltgruppe (черга) der Wohnung.","Powerbanks immer geladen halten, dazu Taschenlampe und Batterien.","Wasser für 2–3 Tage, haltbare Lebensmittel, Bargeld in Hrywnja.","Bei längeren Ausfällen bieten „Пункти незламності“ Wärme, Strom und Internet. Die Standorte stehen u. a. in der App „Дія“.","Im Winter: warme Decken bereithalten, den Gasherd nie zum Heizen benutzen."],
  words:[["Повітряна тривога","Luftalarm"],["Відбій тривоги","Entwarnung"],["Укриття","Schutzraum"],["Комендантська година","Ausgangssperre"],["Блокпост","Kontrollposten"]],
  areas:{chernihiv:"Tschernihiw",brovary:"Browary (M01)",kyiv:"Kyjiw Stadt",kyivobl:"Oblast Kyjiw (West)",lviv:"Oblast Lwiw",rivne:"Oblast Riwne",zhytomyr:"Oblast Schytomyr",ternopil:"Oblast Ternopil",khmelnytskyi:"Oblast Chmelnyzkyj",vinnytsia:"Oblast Winnyzja",chernihiv_obl:"Oblast Tschernihiw",chernihiv_raion:"Bezirk Tschernihiw",chernihiv_city:"Stadt Tschernihiw",
    nizhyn:"Bezirk Nischyn",novhorod:"Bezirk Nowhorod-Siwerskyj",koriukivka:"Bezirk Korjukiwka",prylutskyi:"Bezirk Pryluky",chernihivR:"Bezirk Tschernihiw"},
@@ -457,9 +480,9 @@ uk:{
  footT:"Безпечно в Чернігові",footBy:"Сервіс від",impT:"Імпресум",dsT:"Захист даних",impH1:"Відомості згідно з §\u00a05 DDG (Німеччина)",impOwner:"Власник: Мірко Вільбрандт",impFound:"Підприємство в процесі заснування",impContact:"Контакти",impTel:"Телефон",impMail:"Ел. пошта",impNotes:"Примітки",
  impN1:"Ця сторінка — безоплатна допомога для тих, хто їде до Чернігова. Усі дані без гарантії. Статистика ґрунтується на минулих тривогах і не передбачає атак. Статус наживо може запізнюватися або бути неповним. Визначальними є лише офіційні попередження українських органів влади, зокрема застосунок «Повітряна тривога».",
  impN2:"За зміст зовнішніх сайтів, на які ведуть посилання, відповідають виключно їхні власники.",
- dsH1:"Відповідальна особа",dsH2:"Хостинг",dsH3:"Статус наживо",dsH4:"Збережено в браузері",dsH5:"Ваші права",
+ dsH1:"Відповідальна особа",dsH2:"Хостинг",dsH3:"Статус наживо",dsH4:"Збережено в браузері",dsH6:"Сповіщення та родина",dsPush:"Статус наживо надає сервіс у Cloudflare (Cloudflare, Inc., США, сертифіковано за EU-US Data Privacy Framework); при цьому Cloudflare бачить вашу IP-адресу. Лише якщо ви вмикаєте сповіщення, сервіс зберігає push-адресу вашого браузера, мову, чи потрібен щоденний підсумок, а якщо ви поєднуєте родину, — код родини та введене ім'я. Сповіщення доставляє push-сервіс вашого браузера (у Chrome — Google). Самі повідомлення не містять тексту. Правова підстава — ваша згода (ст. 6 ч. 1 п. a GDPR). Кнопки «Вимкнути» та «Від'єднатися» видаляють ці дані.",dsH5:"Ваші права",
  dsHost:"Сторінка розміщена на GitHub Pages (GitHub, Inc., США). Під час відкриття GitHub обробляє технічно необхідні дані, як-от IP-адресу, щоб показати сторінку і захистити від зловживань (ст. 6 ч. 1 п. f GDPR). GitHub сертифіковано за EU-US Data Privacy Framework.",
- dsLive:"Для статусу наживо сторінка кожні дві хвилини завантажує файл з api.github.com або raw.githubusercontent.com (теж GitHub). При цьому ваша IP-адреса передається GitHub. Жодних даних про вас чи ваше місцезнаходження не надсилається.",
+ dsLive:"Для статусу наживо сторінка щохвилини звертається до сервісу в Cloudflare (див. нижче), а як запасний варіант — до файлу на GitHub (api.github.com, raw.githubusercontent.com). При цьому передається ваша IP-адреса. Жодних даних про вас чи ваше місцезнаходження не надсилається.",
  dsLocal:"Обрана мова і розмір шрифту зберігаються лише на вашому пристрої (localStorage). Немає cookies, сервісів статистики чи реклами. Шрифти завантажуються з самої сторінки, не з Google.",
  dsRights:"Ви маєте право на доступ, виправлення, видалення, обмеження обробки, заперечення, а також на скаргу до органу із захисту даних, у Берліні — до Берлінського уповноваженого із захисту даних і свободи інформації.",
  mark1:"Безпечно в",mark2:"Чернігові",eyebrow:"Чернігів · Чернігівська область",vOrt:"На місці",tOrt:"На місці",returnLink:"Планувати повернення",refresh:"Оновити",
@@ -481,7 +504,15 @@ uk:{
  notifDenied:"Сповіщення заблоковано в браузері. Дозвольте їх у налаштуваннях сайту для цієї сторінки.",
  notifNo:"Цей браузер не підтримує сповіщення.",
  notifIOS:"На iPhone: спершу «Поділитися» → «На початковий екран», відкрийте застосунок звідти й увімкніть тут.",
- notifQuiet:"Браузер не запитав дозволу. Торкніться значка ліворуч від адреси → Дозволи → дозвольте сповіщення. В Android також перевірте: Налаштування → Застосунки → Chrome → Сповіщення увімкнено.",nbarText:"Сповіщати про тривогу в Чернігові",nbarHow:"Як увімкнути",notifEnable:"Увімкнути",notifBusy:"вмикаємо …",notifTest:"Надіслати тест",notifDisable:"Вимкнути",notifSent:"Тест надіслано, надійде за кілька секунд.",notifErr:"Не вдалося. Спробуйте пізніше.",
+ notifQuiet:"Браузер не запитав дозволу. Торкніться значка ліворуч від адреси → Дозволи → дозвольте сповіщення. В Android також перевірте: Налаштування → Застосунки → Chrome → Сповіщення увімкнено.",nbarText:"Сповіщати про тривогу в Чернігові",
+ dailyL:"Щоранку о 8:00 (за Києвом) підсумок за останню добу",
+ famT:"Родина",famNeedPush:"Спершу увімкніть сповіщення вище. Потім можна поєднати телефони родини.",
+ famIntro:"Поєднайте ваші телефони. Тоді кожен одним дотиком може повідомити, що все гаразд, і інші одразу отримають сповіщення.",
+ famName:"Ваше ім'я (бачитимуть інші)",famNew:"Створити родину",famJoin:"Ввести код",famJoinBtn:"Поєднати",famCodeL:"Код родини",
+ famCodeHint:"Введіть цей код на іншому телефоні в «Ввести код». Не поширюйте його публічно.",
+ famOk:"Зі мною все гаразд",famOkSent:"Надіслано. Родина отримає сповіщення.",famWait:"Щойно надіслано. Зачекайте трохи.",famLeave:"Від'єднатися",
+ famCopy:"Копіювати",famCopied:"Скопійовано",famBadCode:"Код неправильний. Він має такий вигляд: ABCDE-FGHJK",famNameMissing:"Спершу введіть своє ім'я.",
+ offline:"офлайн, останній відомий стан",nbarHow:"Як увімкнути",notifEnable:"Увімкнути",notifBusy:"вмикаємо …",notifTest:"Надіслати тест",notifDisable:"Вимкнути",notifSent:"Тест надіслано, надійде за кілька секунд.",notifErr:"Не вдалося. Спробуйте пізніше.",
  notifHint:"Не замінює застосунок «Повітряна тривога», який попереджає безпосередньо від держави. Це сповіщення може надійти із запізненням до хвилини.",
  failed:"Статус зараз недоступний. Користуйтеся застосунком або alerts.in.ua.",typeART:"Загроза артобстрілу",
  zLead:"Як часто о певній годині була повітряна тривога? За київським часом, на годину пізніше, ніж у Берліні.",
@@ -520,7 +551,7 @@ uk:{
  afterT:"Після влучання",
  after:["Не підходьте й не дивіться. Часто буває повторний удар по тому самому місцю.","Є постраждалі — дзвоніть 103, пожежа чи завали — 101.","Не публікуйте фото й відео. Це заборонено і допомагає ворогу.","Коротко повідомте родину, що все гаразд."],
  powerT:"Світло і запаси",
- power:["Можливі планові відключення світла. Графіки публікує «Чернігівобленерго» на своєму сайті та в Telegram.","Тримайте павербанки зарядженими, а також ліхтарик і батарейки.","Вода на 2–3 дні, продукти тривалого зберігання, готівка в гривнях.","Під час тривалих відключень «Пункти незламності» дають тепло, світло та інтернет. Адреси є, зокрема, в застосунку «Дія».","Взимку: теплі ковдри напоготові, ніколи не обігрівайтеся газовою плитою."],
+ power:["Можливі планові відключення світла. Графіки публікує «Чернігівобленерго» на своєму сайті та у Facebook. Гаряча лінія (безкоштовно): 0 800 210 310 — там же можна дізнатися чергу відключень для вашого будинку.","Тримайте павербанки зарядженими, а також ліхтарик і батарейки.","Вода на 2–3 дні, продукти тривалого зберігання, готівка в гривнях.","Під час тривалих відключень «Пункти незламності» дають тепло, світло та інтернет. Адреси є, зокрема, в застосунку «Дія».","Взимку: теплі ковдри напоготові, ніколи не обігрівайтеся газовою плитою."],
  words:[["Повітряна тривога","Luftalarm"],["Відбій тривоги","Entwarnung"],["Укриття","Schutzraum"],["Комендантська година","Ausgangssperre"],["Блокпост","Kontrollposten"]],
  areas:{chernihiv:"Чернігів",brovary:"Бровари (М01)",kyiv:"м. Київ",kyivobl:"Київська обл. (захід)",lviv:"Львівська обл.",rivne:"Рівненська обл.",zhytomyr:"Житомирська обл.",ternopil:"Тернопільська обл.",khmelnytskyi:"Хмельницька обл.",vinnytsia:"Вінницька обл.",chernihiv_obl:"Чернігівська обл.",chernihiv_raion:"Чернігівський район",chernihiv_city:"м. Чернігів",
    nizhyn:"Ніжинський район",novhorod:"Новгород-Сіверський район",koriukivka:"Корюківський район",prylutskyi:"Прилуцький район",chernihivR:"Чернігівський район"},
@@ -573,7 +604,7 @@ async function enablePush(){
     swReg=swReg||await navigator.serviceWorker.register("sw.js");await navigator.serviceWorker.ready;
     const {key}=await (await fetch(WORKER+"/vapid",{cache:"no-store"})).json();
     pushSub=await withTimeout(swReg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64uToBytes(key)}),20000);
-    await post("/subscribe",{subscription:pushSub.toJSON(),lang});saveLang();
+    await post("/subscribe",{subscription:pushSub.toJSON(),lang});saveLang();syncFam().catch(()=>{});
     renderNotif();toast(t("notifOn"));
   }catch(e){renderNotif();toast(t("notifErr"))}
 }
@@ -592,8 +623,53 @@ function renderNotif(){
   else{text=t("notifOff");btns=btn("nOn",t("notifEnable"),"btn solid")}
   $("notifText").textContent=text;$("notifBtns").innerHTML=btns;$("notifHint").textContent=hint;
   $("nOn")&&($("nOn").onclick=enablePush);$("nOff")&&($("nOff").onclick=disablePush);$("nTest")&&($("nTest").onclick=testPush);
-  renderBar();
+  renderBar();renderFam();
+  $("dailyRow").hidden=!pushSub;$("dailyChk").checked=store.get("daily")==="1";
 }
+/* ---------- Familie und Tageszusammenfassung ---------- */
+const CODE_ABC="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+function newCode(){const r=crypto.getRandomValues(new Uint8Array(10));const s=[...r].map(x=>CODE_ABC[x%CODE_ABC.length]).join("");return s.slice(0,5)+"-"+s.slice(5)}
+function saveFamCache(){try{caches.open("settings").then(c=>c.put("family",new Response(store.get("famCode")||"")))}catch(e){}}
+async function syncFam(){
+  saveFamCache();
+  if(!pushSub)return;
+  await post("/family",{endpoint:pushSub.endpoint,family:store.get("famCode")||null,name:store.get("famName")||"",daily:store.get("daily")==="1"});
+}
+function renderFam(){
+  const body=$("famBody"),code=store.get("famCode"),name=store.get("famName")||"";
+  if(!pushSub){$("famIntro").textContent=t("famNeedPush");body.innerHTML="";return}
+  $("famIntro").textContent=t("famIntro");
+  const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const nameField=`<label for="famNameIn">${t("famName")}<input type="text" id="famNameIn" maxlength="30" value="${esc(name)}" autocomplete="given-name"></label>`;
+  if(code){
+    body.innerHTML=`<button class="btn solid big" type="button" id="famOkBtn">✓ ${t("famOk")}</button>
+      ${nameField}
+      <div><span class="small muted">${t("famCodeL")}</span><div class="select-row"><span class="famcode" id="famCodeTxt">${code}</span><button class="btn" type="button" id="famCopyBtn">${t("famCopy")}</button></div><p class="small muted">${t("famCodeHint")}</p></div>
+      <div><button class="btn" type="button" id="famLeaveBtn">${t("famLeave")}</button></div>`;
+    $("famOkBtn").onclick=sendOk;
+    $("famCopyBtn").onclick=async()=>{try{await navigator.clipboard.writeText(code);toast(t("famCopied"))}catch(e){const r=document.createRange();r.selectNodeContents($("famCodeTxt"));const s=getSelection();s.removeAllRanges();s.addRange(r)}};
+    $("famLeaveBtn").onclick=async()=>{store.set("famCode","");renderFam();try{await syncFam()}catch(e){}};
+  }else{
+    body.innerHTML=`${nameField}
+      <div class="select-row"><button class="btn solid" type="button" id="famNewBtn">${t("famNew")}</button></div>
+      <label for="famCodeIn">${t("famJoin")}<input type="text" id="famCodeIn" placeholder="ABCDE-FGHJK" autocapitalize="characters" autocomplete="off"></label>
+      <div class="select-row"><button class="btn" type="button" id="famJoinBtn">${t("famJoinBtn")}</button></div>`;
+    const needName=()=>{const n=$("famNameIn").value.trim();if(!n){toast(t("famNameMissing"));$("famNameIn").focus();return false}store.set("famName",n);return true};
+    $("famNewBtn").onclick=async()=>{if(!needName())return;store.set("famCode",newCode());renderFam();try{await syncFam()}catch(e){toast(t("notifErr"))}};
+    $("famJoinBtn").onclick=async()=>{if(!needName())return;const c=$("famCodeIn").value.toUpperCase().replace(/[^A-Z0-9]/g,"");
+      if(c.length!==10){toast(t("famBadCode"));return}
+      store.set("famCode",c.slice(0,5)+"-"+c.slice(5));renderFam();try{await syncFam()}catch(e){toast(t("notifErr"))}};
+  }
+  $("famNameIn").onchange=async e=>{store.set("famName",e.target.value.trim());try{await syncFam()}catch(err){}};
+}
+async function sendOk(){
+  const b=$("famOkBtn");b.disabled=true;
+  try{const r=await fetch(WORKER+"/ok",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({endpoint:pushSub.endpoint})});
+    toast(r.ok?t("famOkSent"):r.status===429?t("famWait"):t("notifErr"))}
+  catch(e){toast(t("notifErr"))}
+  setTimeout(()=>{if($("famOkBtn"))$("famOkBtn").disabled=false},3000);
+}
+
 // Leiste unten über der Navigation, solange Benachrichtigungen aus sind
 function renderBar(){
   const bar=$("nbar"),dismissed=store.get("nbarOff")==="1";
@@ -721,7 +797,7 @@ function renderLive(){
     $("liveList").innerHTML="";renderQuote(false);renderDay(null);return;
   }
   const age=Math.max(0,Math.round((Date.now()-new Date(LIVE.updated))/60000));
-  $("stand").textContent=`${t("stand")} ${localTime(LIVE.updated)} · ${fmt(t("ago"),{n:age})}`+(age>20?` · ${t("stale")}`:"");
+  $("stand").textContent=`${t("stand")} ${localTime(LIVE.updated)} · ${fmt(t("ago"),{n:age})}`+(!navigator.onLine?` · ${t("offline")}`:age>20?` · ${t("stale")}`:"");
   const c=LIVE.areas.chernihiv_city,s=stOf(c);
   $("nowCard").className="card now "+stCls(s);
   $("nowState").textContent=stTxt(s);
@@ -826,7 +902,9 @@ window.addEventListener("hashchange",route);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)loadLive()});
 setInterval(loadLive,60000);
 
-applyText();route();loadLive();renderKm();initPush();saveLang();
+$("dailyChk").onchange=async e=>{store.set("daily",e.target.checked?"1":"");try{await syncFam()}catch(err){toast(t("notifErr"))}};
+window.addEventListener("online",loadLive);window.addEventListener("offline",()=>{if(LIVE)renderLive()});
+applyText();route();loadLive();renderKm();initPush();saveLang();saveFamCache();
 fetch("data/stats.json").then(r=>r.json()).then(d=>{STATS=d;renderStats()}).catch(()=>{$("srcNote").textContent="data/stats.json?"});
 </script>
 </body>

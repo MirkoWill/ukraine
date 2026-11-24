@@ -13,12 +13,10 @@ Läuft über GitHub Pages: https://mirkowill.github.io/ukraine/
 
 ## Wie der Live-Status funktioniert
 
-Die Alarm-Schnittstellen erlauben keinen direkten Abruf aus dem Browser. Deshalb:
-
-1. **Hauptquelle:** ein Cloudflare Worker (`tools/worker.js`) unter https://ukraine-alarm.plain-paper-0d28.workers.dev/. Er fragt siren.pp.ua (Ersatz: ubilling.net.ua) und gibt den Status mit CORS-Header an die Seite weiter. Änderungen am Code: in Cloudflare unter Workers & Pages → ukraine-alarm → Edit code einfügen und Deploy.
-2. **Ersatz:** die GitHub Action `.github/workflows/live.yml` legt etwa alle 5 Minuten `live.json` auf dem Branch `live` ab. GitHub startet geplante Läufe oft verspätet.
-
-Die Seite fragt zuerst den Worker und nimmt nach 8 Sekunden ohne Antwort die GitHub-Datei. Sie zeigt immer, wie alt der Stand ist.
+1. **Cloudflare Worker** (`tools/worker.js`, https://ukraine-alarm.plain-paper-0d28.workers.dev/): fragt siren.pp.ua (Ersatz: ubilling.net.ua) und liefert den Status mit CORS-Header. Eine Zeitsteuerung (jede Minute) schreibt den Alarmverlauf der Stadt in den KV-Speicher (Bindung `HIST` oder `Ukraine`), schickt bei Alarm und Entwarnung Push-Nachrichten und um 8:00 Uhr Kyjiwer Zeit die Tageszusammenfassung. Außerdem: Familien-Lebenszeichen („Mir geht’s gut“).
+   Code ändern: in Cloudflare unter Workers & Pages → ukraine-alarm → Edit code einfügen und Deploy.
+2. **Service Worker** (`sw.js`): zeigt die Push-Nachrichten an (sie sind leer, der Text kommt von `/event`) und speichert die Seite für den Offline-Betrieb.
+3. **Ersatz:** die GitHub Action `.github/workflows/live.yml` legt etwa alle 5 Minuten `live.json` auf dem Branch `live` ab.
 
 ## Statistik aktualisieren
 
