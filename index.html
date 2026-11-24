@@ -58,7 +58,7 @@ p{margin:0}
 .spin svg{animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.spin svg{animation:none}}
-.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(92px + env(safe-area-inset-bottom,0px));background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;font-weight:600;z-index:30;box-shadow:var(--shadow);white-space:nowrap}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(92px + env(safe-area-inset-bottom,0px));background:var(--ink);color:#fff;padding:10px 18px;border-radius:16px;font-weight:600;z-index:30;box-shadow:var(--shadow);width:max-content;max-width:calc(100% - 32px);text-align:center}
 
 /* views */
 main{padding-block:22px}
@@ -392,7 +392,7 @@ de:{
  notifDenied:"Benachrichtigungen sind im Browser blockiert. In den Website-Einstellungen des Browsers für diese Seite erlauben.",
  notifNo:"Dieser Browser unterstützt keine Benachrichtigungen.",
  notifIOS:"Auf dem iPhone: zuerst über „Teilen“ → „Zum Home-Bildschirm“ hinzufügen, die App von dort öffnen und hier einschalten.",
- notifEnable:"Einschalten",notifBusy:"wird eingeschaltet …",notifTest:"Test senden",notifDisable:"Ausschalten",notifSent:"Test gesendet, kommt in wenigen Sekunden.",notifErr:"Hat nicht geklappt. Bitte später noch einmal versuchen.",
+ notifQuiet:"Der Browser hat nicht nachgefragt. Auf das Symbol links neben der Adresse tippen → Berechtigungen → Benachrichtigungen erlauben. Unter Android auch prüfen: Einstellungen → Apps → Chrome → Benachrichtigungen an.",notifEnable:"Einschalten",notifBusy:"wird eingeschaltet …",notifTest:"Test senden",notifDisable:"Ausschalten",notifSent:"Test gesendet, kommt in wenigen Sekunden.",notifErr:"Hat nicht geklappt. Bitte später noch einmal versuchen.",
  notifHint:"Ersetzt nicht die App „Повітряна тривога“, die direkt vom Staat warnt. Diese Benachrichtigung kann bis zu einer Minute später kommen.",
  failed:"Live-Status gerade nicht abrufbar. Bitte die App oder alerts.in.ua nutzen.",typeART:"Artilleriegefahr",
  zLead:"Wie oft war zu welcher Uhrzeit Luftalarm? Kyjiwer Zeit, eine Stunde später als in Berlin.",
@@ -465,7 +465,7 @@ uk:{
  notifDenied:"Сповіщення заблоковано в браузері. Дозвольте їх у налаштуваннях сайту для цієї сторінки.",
  notifNo:"Цей браузер не підтримує сповіщення.",
  notifIOS:"На iPhone: спершу «Поділитися» → «На початковий екран», відкрийте застосунок звідти й увімкніть тут.",
- notifEnable:"Увімкнути",notifBusy:"вмикаємо …",notifTest:"Надіслати тест",notifDisable:"Вимкнути",notifSent:"Тест надіслано, надійде за кілька секунд.",notifErr:"Не вдалося. Спробуйте пізніше.",
+ notifQuiet:"Браузер не запитав дозволу. Торкніться значка ліворуч від адреси → Дозволи → дозвольте сповіщення. В Android також перевірте: Налаштування → Застосунки → Chrome → Сповіщення увімкнено.",notifEnable:"Увімкнути",notifBusy:"вмикаємо …",notifTest:"Надіслати тест",notifDisable:"Вимкнути",notifSent:"Тест надіслано, надійде за кілька секунд.",notifErr:"Не вдалося. Спробуйте пізніше.",
  notifHint:"Не замінює застосунок «Повітряна тривога», який попереджає безпосередньо від держави. Це сповіщення може надійти із запізненням до хвилини.",
  failed:"Статус зараз недоступний. Користуйтеся застосунком або alerts.in.ua.",typeART:"Загроза артобстрілу",
  zLead:"Як часто о певній годині була повітряна тривога? За київським часом, на годину пізніше, ніж у Берліні.",
@@ -553,7 +553,7 @@ const withTimeout=(pr,ms)=>Promise.race([pr,new Promise((_,rej)=>setTimeout(()=>
 async function enablePush(){
   const b=$("nOn");if(b){b.disabled=true;b.textContent=t("notifBusy")}
   try{
-    const perm=await Notification.requestPermission();if(perm!=="granted"){renderNotif();return}
+    const perm=await Notification.requestPermission();if(perm!=="granted"){renderNotif();toast(t(perm==="denied"?"notifDenied":"notifQuiet"));return}
     swReg=swReg||await navigator.serviceWorker.register("sw.js");await navigator.serviceWorker.ready;
     const {key}=await (await fetch(WORKER+"/vapid",{cache:"no-store"})).json();
     pushSub=await withTimeout(swReg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64uToBytes(key)}),20000);
@@ -618,7 +618,7 @@ function route(){
 
 /* ---------- live ---------- */
 let toastTimer;
-function toast(msg){const el=$("toast");el.textContent=msg;el.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.hidden=true,3500)}
+function toast(msg){const el=$("toast");el.textContent=msg;el.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.hidden=true,msg.length>80?9000:3500)}
 async function manualRefresh(){
   const btns=[$("refresh"),$("heroRefresh")];btns.forEach(b=>{b.classList.add("spin");b.disabled=true});
   await loadLive();
