@@ -8,6 +8,12 @@
 
 
 <link rel="stylesheet" href="fonts/fonts.css">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Чернігів">
 <style>
 /* Layout: phone-first app shell. Wordmark header, dark slanted hero band with language/size pills,
    four views (Live, Zeiten, Route, Regeln) switched by a fixed bottom tab bar. Light theme only, by choice. */
@@ -199,6 +205,12 @@ nav.tabs a[aria-current="page"]{color:var(--olive)}
     <span id="dayText"></span>
     <span class="small muted" id="dayNote"></span>
   </div>
+  <div class="card" id="notifCard">
+    <h3 data-i="notifT">Benachrichtigungen</h3>
+    <p id="notifText" class="small"></p>
+    <div class="select-row" id="notifBtns"></div>
+    <p id="notifHint" class="small muted"></p>
+  </div>
   <div class="card">
     <h3 data-i="routeNow">Strecke jetzt</h3>
     <div class="list" id="liveList"></div>
@@ -374,6 +386,14 @@ de:{
  dayText:"<b>{h} Std.</b> unter Alarm, Anzahl Alarme: {c}.",dayTextPart:"Seit {s}: <b>{h} Std.</b> unter Alarm, Anzahl Alarme: {c}.",
  dayNote:"Ruhig heißt: weniger als 4,7 Std., unruhig: mehr als 10,7 Std. – verglichen mit den letzten 90 Tagen. Nach unruhigen Tagen folgen oft weitere unruhige. Keine Vorhersage.",
  dayNotePart:"Die Aufzeichnung läuft seit {s}. Die Einstufung erscheint, sobald 24 Stunden erfasst sind.",
+ scope:{city:"Gilt für die Stadt.",raion:"Gilt für den ganzen Bezirk Tschernihiw, auch die Stadt.",oblast:"Gilt für die ganze Oblast, auch die Stadt."},
+ notifT:"Benachrichtigungen",notifOff:"Bei Beginn und Ende eines Alarms in der Stadt Tschernihiw meldet sich das Handy, auch wenn die Seite geschlossen ist.",
+ notifOn:"Eingeschaltet. Bei Alarm und Entwarnung in der Stadt Tschernihiw kommt eine Benachrichtigung.",
+ notifDenied:"Benachrichtigungen sind im Browser blockiert. In den Website-Einstellungen des Browsers für diese Seite erlauben.",
+ notifNo:"Dieser Browser unterstützt keine Benachrichtigungen.",
+ notifIOS:"Auf dem iPhone: zuerst über „Teilen“ → „Zum Home-Bildschirm“ hinzufügen, die App von dort öffnen und hier einschalten.",
+ notifEnable:"Einschalten",notifBusy:"wird eingeschaltet …",notifTest:"Test senden",notifDisable:"Ausschalten",notifSent:"Test gesendet, kommt in wenigen Sekunden.",notifErr:"Hat nicht geklappt. Bitte später noch einmal versuchen.",
+ notifHint:"Ersetzt nicht die App „Повітряна тривога“, die direkt vom Staat warnt. Diese Benachrichtigung kann bis zu einer Minute später kommen.",
  failed:"Live-Status gerade nicht abrufbar. Bitte die App oder alerts.in.ua nutzen.",typeART:"Artilleriegefahr",
  zLead:"Wie oft war zu welcher Uhrzeit Luftalarm? Kyjiwer Zeit, eine Stunde später als in Berlin.",
  p90:"90 Tage",p365:"12 Monate",bestWin:"Ruhigstes Fenster tagsüber",worstH:"Unruhigste Stunde",perDay:"Alarme pro Tag",medDur:"Typische Dauer",
@@ -413,7 +433,7 @@ de:{
  powerT:"Strom und Vorrat",
  power:["Geplante Stromabschaltungen sind möglich. Die Zeiten veröffentlicht der Netzbetreiber „Чернігівобленерго“ auf seiner Seite und in Telegram.","Powerbanks immer geladen halten, dazu Taschenlampe und Batterien.","Wasser für 2–3 Tage, haltbare Lebensmittel, Bargeld in Hrywnja.","Bei längeren Ausfällen bieten „Пункти незламності“ Wärme, Strom und Internet. Die Standorte stehen u. a. in der App „Дія“.","Im Winter: warme Decken bereithalten, den Gasherd nie zum Heizen benutzen."],
  words:[["Повітряна тривога","Luftalarm"],["Відбій тривоги","Entwarnung"],["Укриття","Schutzraum"],["Комендантська година","Ausgangssperre"],["Блокпост","Kontrollposten"]],
- areas:{chernihiv:"Tschernihiw",brovary:"Browary (M01)",kyiv:"Kyjiw Stadt",kyivobl:"Oblast Kyjiw (West)",lviv:"Oblast Lwiw",rivne:"Oblast Riwne",zhytomyr:"Oblast Schytomyr",ternopil:"Oblast Ternopil",khmelnytskyi:"Oblast Chmelnyzkyj",vinnytsia:"Oblast Winnyzja",chernihiv_obl:"Oblast Tschernihiw",chernihiv_city:"Stadt Tschernihiw",
+ areas:{chernihiv:"Tschernihiw",brovary:"Browary (M01)",kyiv:"Kyjiw Stadt",kyivobl:"Oblast Kyjiw (West)",lviv:"Oblast Lwiw",rivne:"Oblast Riwne",zhytomyr:"Oblast Schytomyr",ternopil:"Oblast Ternopil",khmelnytskyi:"Oblast Chmelnyzkyj",vinnytsia:"Oblast Winnyzja",chernihiv_obl:"Oblast Tschernihiw",chernihiv_raion:"Bezirk Tschernihiw",chernihiv_city:"Stadt Tschernihiw",
    nizhyn:"Bezirk Nischyn",novhorod:"Bezirk Nowhorod-Siwerskyj",koriukivka:"Bezirk Korjukiwka",prylutskyi:"Bezirk Pryluky",chernihivR:"Bezirk Tschernihiw"},
  distSub:{chernihivR:"Stadt Tschernihiw, Koselez, M01; im Norden bis Belarus",nizhyn:"Nischyn, Bobrowyzja; abseits der Grenze",prylutskyi:"Pryluky, Ichnja; Süden",koriukivka:"Korjukiwka, Semeniwka; an der russischen Grenze",novhorod:"Direkt an der russischen Grenze"}
 },
@@ -439,6 +459,14 @@ uk:{
  dayText:"<b>{h} год</b> тривоги, тривог: {c}.",dayTextPart:"З {s}: <b>{h} год</b> тривоги, тривог: {c}.",
  dayNote:"Спокійно — менше 4,7 год, неспокійно — понад 10,7 год, порівняно з останніми 90 днями. Після неспокійних днів часто бувають ще неспокійні. Це не прогноз.",
  dayNotePart:"Запис ведеться з {s}. Оцінка з'явиться, щойно буде охоплено 24 години.",
+ scope:{city:"Тривога для міста.",raion:"Тривога для всього Чернігівського району, включно з містом.",oblast:"Тривога для всієї області, включно з містом."},
+ notifT:"Сповіщення",notifOff:"На початку і наприкінці тривоги в місті Чернігові телефон повідомить вас, навіть коли сторінку закрито.",
+ notifOn:"Увімкнено. Про тривогу й відбій у місті Чернігові надійде сповіщення.",
+ notifDenied:"Сповіщення заблоковано в браузері. Дозвольте їх у налаштуваннях сайту для цієї сторінки.",
+ notifNo:"Цей браузер не підтримує сповіщення.",
+ notifIOS:"На iPhone: спершу «Поділитися» → «На початковий екран», відкрийте застосунок звідти й увімкніть тут.",
+ notifEnable:"Увімкнути",notifBusy:"вмикаємо …",notifTest:"Надіслати тест",notifDisable:"Вимкнути",notifSent:"Тест надіслано, надійде за кілька секунд.",notifErr:"Не вдалося. Спробуйте пізніше.",
+ notifHint:"Не замінює застосунок «Повітряна тривога», який попереджає безпосередньо від держави. Це сповіщення може надійти із запізненням до хвилини.",
  failed:"Статус зараз недоступний. Користуйтеся застосунком або alerts.in.ua.",typeART:"Загроза артобстрілу",
  zLead:"Як часто о певній годині була повітряна тривога? За київським часом, на годину пізніше, ніж у Берліні.",
  p90:"90 днів",p365:"12 місяців",bestWin:"Найспокійніше вікно вдень",worstH:"Найнеспокійніша година",perDay:"Тривог на день",medDur:"Типова тривалість",
@@ -478,12 +506,12 @@ uk:{
  powerT:"Світло і запаси",
  power:["Можливі планові відключення світла. Графіки публікує «Чернігівобленерго» на своєму сайті та в Telegram.","Тримайте павербанки зарядженими, а також ліхтарик і батарейки.","Вода на 2–3 дні, продукти тривалого зберігання, готівка в гривнях.","Під час тривалих відключень «Пункти незламності» дають тепло, світло та інтернет. Адреси є, зокрема, в застосунку «Дія».","Взимку: теплі ковдри напоготові, ніколи не обігрівайтеся газовою плитою."],
  words:[["Повітряна тривога","Luftalarm"],["Відбій тривоги","Entwarnung"],["Укриття","Schutzraum"],["Комендантська година","Ausgangssperre"],["Блокпост","Kontrollposten"]],
- areas:{chernihiv:"Чернігів",brovary:"Бровари (М01)",kyiv:"м. Київ",kyivobl:"Київська обл. (захід)",lviv:"Львівська обл.",rivne:"Рівненська обл.",zhytomyr:"Житомирська обл.",ternopil:"Тернопільська обл.",khmelnytskyi:"Хмельницька обл.",vinnytsia:"Вінницька обл.",chernihiv_obl:"Чернігівська обл.",chernihiv_city:"м. Чернігів",
+ areas:{chernihiv:"Чернігів",brovary:"Бровари (М01)",kyiv:"м. Київ",kyivobl:"Київська обл. (захід)",lviv:"Львівська обл.",rivne:"Рівненська обл.",zhytomyr:"Житомирська обл.",ternopil:"Тернопільська обл.",khmelnytskyi:"Хмельницька обл.",vinnytsia:"Вінницька обл.",chernihiv_obl:"Чернігівська обл.",chernihiv_raion:"Чернігівський район",chernihiv_city:"м. Чернігів",
    nizhyn:"Ніжинський район",novhorod:"Новгород-Сіверський район",koriukivka:"Корюківський район",prylutskyi:"Прилуцький район",chernihivR:"Чернігівський район"},
  distSub:{chernihivR:"Чернігів, Козелець, М01; на півночі до білорусі",nizhyn:"Ніжин, Бобровиця; далеко від кордону",prylutskyi:"Прилуки, Ічня; південь",koriukivka:"Корюківка, Семенівка; на кордоні з росією",novhorod:"Безпосередньо на кордоні з росією"}
 }};
 const HERO={live:"vLive",zeiten:"vZeiten",vorort:"vOrt",route:"vRoute",regeln:"vRegeln",impressum:"impT",datenschutz:"dsT"};
-const LIVE_ORDER=["chernihiv_obl","brovary","kyiv"]; // Reise: ["lviv","rivne","zhytomyr","ternopil","khmelnytskyi","vinnytsia","kyivobl","kyiv","brovary","chernihiv_obl"]
+const LIVE_ORDER=["chernihiv_raion","chernihiv_obl","brovary","kyiv"]; // Reise: ["lviv","rivne","zhytomyr","ternopil","khmelnytskyi","vinnytsia","kyivobl","kyiv","brovary","chernihiv_obl"]
 const STAT_AREAS=["chernihiv","kyiv","brovary"];
 const LEGS={
  // Rückreise Tschernihiw → Lwiw (Hinreise war dieselbe Strecke in umgekehrter Richtung)
@@ -505,6 +533,57 @@ const KM=[
  ["Browary","Бровари","ua",26,"M01",36],
  ["Tschernihiw","Чернігів","ua",119,"M01",114]
 ];
+const WORKER="https://ukraine-alarm.plain-paper-0d28.workers.dev";
+/* ---------- Benachrichtigungen ---------- */
+const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+const standalone=window.matchMedia&&matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
+const pushOK="serviceWorker" in navigator&&"PushManager" in window&&"Notification" in window;
+let swReg=null,pushSub=null,lastCity=null;
+function saveLang(){try{caches.open("settings").then(c=>c.put("lang",new Response(lang)))}catch(e){}}
+const b64uToBytes=s=>Uint8Array.from(atob(s.replace(/-/g,"+").replace(/_/g,"/")+"==".slice(0,(4-s.length%4)%4)),c=>c.charCodeAt(0));
+async function initPush(){
+  if(!pushOK){renderNotif();return}
+  try{swReg=await navigator.serviceWorker.register("sw.js");pushSub=await swReg.pushManager.getSubscription();
+    if(pushSub)post("/subscribe",{subscription:pushSub.toJSON(),lang}).catch(()=>{}); // Abo auffrischen
+  }catch(e){}
+  renderNotif();
+}
+async function post(path,body){const r=await fetch(WORKER+path,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)});if(!r.ok)throw new Error(r.status);return r.json()}
+const withTimeout=(pr,ms)=>Promise.race([pr,new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout")),ms))]);
+async function enablePush(){
+  const b=$("nOn");if(b){b.disabled=true;b.textContent=t("notifBusy")}
+  try{
+    const perm=await Notification.requestPermission();if(perm!=="granted"){renderNotif();return}
+    swReg=swReg||await navigator.serviceWorker.register("sw.js");await navigator.serviceWorker.ready;
+    const {key}=await (await fetch(WORKER+"/vapid",{cache:"no-store"})).json();
+    pushSub=await withTimeout(swReg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64uToBytes(key)}),20000);
+    await post("/subscribe",{subscription:pushSub.toJSON(),lang});saveLang();
+    renderNotif();toast(t("notifOn"));
+  }catch(e){renderNotif();toast(t("notifErr"))}
+}
+async function disablePush(){
+  try{if(pushSub){await post("/unsubscribe",{endpoint:pushSub.endpoint}).catch(()=>{});await pushSub.unsubscribe()}}catch(e){}
+  pushSub=null;renderNotif();
+}
+async function testPush(){try{await post("/test",{endpoint:pushSub.endpoint});toast(t("notifSent"))}catch(e){toast(t("notifErr"))}}
+function renderNotif(){
+  const btn=(id,label,cls="btn")=>`<button class="${cls}" type="button" id="${id}">${label}</button>`;
+  let text,btns="",hint=t("notifHint");
+  if(!pushOK&&isIOS&&!standalone){text=t("notifIOS")}
+  else if(!pushOK){text=t("notifNo")}
+  else if(Notification.permission==="denied"){text=t("notifDenied")}
+  else if(pushSub){text=t("notifOn");btns=btn("nTest",t("notifTest"))+btn("nOff",t("notifDisable"))}
+  else{text=t("notifOff");btns=btn("nOn",t("notifEnable"),"btn solid")}
+  $("notifText").textContent=text;$("notifBtns").innerHTML=btns;$("notifHint").textContent=hint;
+  $("nOn")&&($("nOn").onclick=enablePush);$("nOff")&&($("nOff").onclick=disablePush);$("nTest")&&($("nTest").onclick=testPush);
+}
+// Ohne Push-Abo: solange die Seite offen ist, bei Statuswechsel lokal melden
+function notifyLocal(s){
+  const prev=lastCity;lastCity=s;
+  if(pushSub||!prev||prev===s||!(s==="alert"||prev==="alert"))return;
+  if(!("Notification" in window)||Notification.permission!=="granted"||!swReg)return;
+  swReg.showNotification(s==="alert"?(lang==="uk"?"Повітряна тривога: Чернігів":"Luftalarm in Tschernihiw"):(lang==="uk"?"Відбій тривоги: Чернігів":"Entwarnung in Tschernihiw"),{tag:"chernihiv",renotify:true,icon:"icons/icon-192.png"}).catch(()=>{});
+}
 const LIVE_URLS=["https://ukraine-alarm.plain-paper-0d28.workers.dev/","https://api.github.com/repos/MirkoWill/ukraine/contents/live.json?ref=live","https://raw.githubusercontent.com/MirkoWill/ukraine/live/live.json"];
 
 const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
@@ -618,7 +697,8 @@ function renderLive(){
   $("nowState").textContent=stTxt(s);
   renderQuote(s==="clear");
   renderDay(LIVE.last24h);
-  $("nowSub").textContent=c&&c.since?`${t("since")} ${localTime(c.since)}`+(c.types&&c.types.includes("ARTILLERY")?` · ${t("typeART")}`:""):"";
+  $("nowSub").textContent=(s==="alert"&&c.scope?t("scope")[c.scope]+" ":"")+(c&&c.since&&s==="alert"?`${t("since")} ${localTime(c.since)}`+(c.types&&c.types.includes("ARTILLERY")?` · ${t("typeART")}`:""):"");
+  notifyLocal(s);
   $("liveList").innerHTML=LIVE_ORDER.map(k=>{const a=LIVE.areas[k],s=stOf(a);
     return `<div class="row"><span class="dot ${stCls(s)}"></span><div class="grow"><div class="name">${t("areas")[k]}</div><div class="sub">${stTxt(s)}</div></div><div class="right">${a&&a.since&&s!=="clear"?t("since")+" "+localTime(a.since):""}</div></div>`}).join("");
 }
@@ -704,7 +784,7 @@ function renderDist(){
 }
 
 /* ---------- events ---------- */
-$("langBtn").onclick=()=>{lang=lang==="de"?"uk":"de";store.set("lang",lang);applyText();renderLive();renderStats();renderKm();};
+$("langBtn").onclick=()=>{lang=lang==="de"?"uk":"de";store.set("lang",lang);applyText();renderLive();renderStats();renderKm();renderNotif();saveLang();if(pushSub)post("/subscribe",{subscription:pushSub.toJSON(),lang}).catch(()=>{});};
 $("bigBtn").onclick=()=>{const on=document.documentElement.classList.toggle("big");$("bigBtn").setAttribute("aria-pressed",String(on));store.set("big",on?"1":"")};
 if(store.get("big")){document.documentElement.classList.add("big");$("bigBtn").setAttribute("aria-pressed","true")}
 $("refresh").onclick=manualRefresh;$("heroRefresh").onclick=manualRefresh;
@@ -716,7 +796,7 @@ window.addEventListener("hashchange",route);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)loadLive()});
 setInterval(loadLive,60000);
 
-applyText();route();loadLive();renderKm();
+applyText();route();loadLive();renderKm();initPush();saveLang();
 fetch("data/stats.json").then(r=>r.json()).then(d=>{STATS=d;renderStats()}).catch(()=>{$("srcNote").textContent="data/stats.json?"});
 </script>
 </body>
