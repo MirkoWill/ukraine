@@ -423,7 +423,7 @@ de:{
  notifDenied:"Benachrichtigungen sind im Browser blockiert. In den Website-Einstellungen des Browsers für diese Seite erlauben.",
  notifNo:"Dieser Browser unterstützt keine Benachrichtigungen.",
  notifIOS:"Auf dem iPhone: zuerst über „Teilen“ → „Zum Home-Bildschirm“ hinzufügen, die App von dort öffnen und hier einschalten.",
- notifQuiet:"Der Browser hat nicht nachgefragt. Auf das Symbol links neben der Adresse tippen → Berechtigungen → Benachrichtigungen erlauben. Unter Android auch prüfen: Einstellungen → Apps → Chrome → Benachrichtigungen an.",nbarText:"Bei Alarm in Tschernihiw benachrichtigen",
+ notifQuiet:"Der Browser hat nicht nachgefragt. Auf das Symbol links neben der Adresse tippen → Berechtigungen → Benachrichtigungen erlauben. Unter Android auch prüfen: Einstellungen → Apps → Chrome → Benachrichtigungen an.",nbarText:"Bei Alarm in Tschernihiw benachrichtigen",openChrome:"In Chrome öffnen",notifChrome:"Hier sind Benachrichtigungen nicht möglich, zum Beispiel weil die Seite in einem Messenger geöffnet wurde. Bitte in Chrome öffnen und dort einschalten.",
  dailyL:"Jeden Morgen um 8 Uhr (Kyjiwer Zeit) eine Zusammenfassung der letzten 24 Stunden",
  famT:"Familie",famNeedPush:"Zuerst oben die Benachrichtigungen einschalten. Danach lassen sich die Handys der Familie verbinden.",
  famIntro:"Verbindet eure Handys. Dann kann jede Person mit einem Tipp melden, dass alles in Ordnung ist, und die anderen bekommen sofort eine Benachrichtigung.",
@@ -504,7 +504,7 @@ uk:{
  notifDenied:"Сповіщення заблоковано в браузері. Дозвольте їх у налаштуваннях сайту для цієї сторінки.",
  notifNo:"Цей браузер не підтримує сповіщення.",
  notifIOS:"На iPhone: спершу «Поділитися» → «На початковий екран», відкрийте застосунок звідти й увімкніть тут.",
- notifQuiet:"Браузер не запитав дозволу. Торкніться значка ліворуч від адреси → Дозволи → дозвольте сповіщення. В Android також перевірте: Налаштування → Застосунки → Chrome → Сповіщення увімкнено.",nbarText:"Сповіщати про тривогу в Чернігові",
+ notifQuiet:"Браузер не запитав дозволу. Торкніться значка ліворуч від адреси → Дозволи → дозвольте сповіщення. В Android також перевірте: Налаштування → Застосунки → Chrome → Сповіщення увімкнено.",nbarText:"Сповіщати про тривогу в Чернігові",openChrome:"Відкрити в Chrome",notifChrome:"Тут сповіщення неможливі, наприклад, бо сторінку відкрито в месенджері. Відкрийте її в Chrome і ввімкніть там.",
  dailyL:"Щоранку о 8:00 (за Києвом) підсумок за останню добу",
  famT:"Родина",famNeedPush:"Спершу увімкніть сповіщення вище. Потім можна поєднати телефони родини.",
  famIntro:"Поєднайте ваші телефони. Тоді кожен одним дотиком може повідомити, що все гаразд, і інші одразу отримають сповіщення.",
@@ -585,6 +585,12 @@ const WORKER="https://ukraine-alarm.plain-paper-0d28.workers.dev";
 const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
 const standalone=window.matchMedia&&matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
 const pushOK="serviceWorker" in navigator&&"PushManager" in window&&"Notification" in window;
+// Android: eingebauter Browser eines Messengers o. Ä. erlaubt keine Benachrichtigungen -> in Chrome öffnen
+const isAndroid=/Android/i.test(navigator.userAgent);
+const inApp=/; wv\)|FBAN|FBAV|Instagram|Telegram|WhatsApp|Line\/|Viber|GSA\//i.test(navigator.userAgent);
+const chromeIntent=()=>"intent://"+location.host+location.pathname+"#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url="+encodeURIComponent(location.href)+";end";
+const needChrome=()=>isAndroid&&(inApp||!pushOK||Notification.permission==="denied");
+const openChrome=()=>{location.href=chromeIntent()};
 let swReg=null,pushSub=null,lastCity=null;
 function saveLang(){try{caches.open("settings").then(c=>c.put("lang",new Response(lang)))}catch(e){}}
 const b64uToBytes=s=>Uint8Array.from(atob(s.replace(/-/g,"+").replace(/_/g,"/")+"==".slice(0,(4-s.length%4)%4)),c=>c.charCodeAt(0));
@@ -616,13 +622,14 @@ async function testPush(){try{await post("/test",{endpoint:pushSub.endpoint});to
 function renderNotif(){
   const btn=(id,label,cls="btn")=>`<button class="${cls}" type="button" id="${id}">${label}</button>`;
   let text,btns="",hint=t("notifHint");
-  if(!pushOK&&isIOS&&!standalone){text=t("notifIOS")}
+  if(needChrome()&&!pushSub){text=t("notifChrome");btns=btn("nChrome",t("openChrome"),"btn solid")}
+  else if(!pushOK&&isIOS&&!standalone){text=t("notifIOS")}
   else if(!pushOK){text=t("notifNo")}
   else if(Notification.permission==="denied"){text=t("notifDenied")}
   else if(pushSub){text=t("notifOn");btns=btn("nTest",t("notifTest"))+btn("nOff",t("notifDisable"))}
   else{text=t("notifOff");btns=btn("nOn",t("notifEnable"),"btn solid")}
   $("notifText").textContent=text;$("notifBtns").innerHTML=btns;$("notifHint").textContent=hint;
-  $("nOn")&&($("nOn").onclick=enablePush);$("nOff")&&($("nOff").onclick=disablePush);$("nTest")&&($("nTest").onclick=testPush);
+  $("nOn")&&($("nOn").onclick=enablePush);$("nOff")&&($("nOff").onclick=disablePush);$("nTest")&&($("nTest").onclick=testPush);$("nChrome")&&($("nChrome").onclick=openChrome);
   renderBar();renderFam();
   $("dailyRow").hidden=!pushSub;$("dailyChk").checked=store.get("daily")==="1";
 }
@@ -674,7 +681,8 @@ async function sendOk(){
 function renderBar(){
   const bar=$("nbar"),dismissed=store.get("nbarOff")==="1";
   let show=!pushSub&&!dismissed&&(pushOK||isIOS),label=t("notifEnable"),act=enablePush;
-  if(pushOK&&Notification.permission==="denied"){label=t("nbarHow");act=()=>toast(t("notifQuiet"))}
+  if(needChrome()){show=!pushSub&&!dismissed;label=t("openChrome");act=openChrome}
+  else if(pushOK&&Notification.permission==="denied"){label=t("nbarHow");act=()=>toast(t("notifQuiet"))}
   if(!pushOK&&isIOS){label=t("nbarHow");act=()=>toast(t("notifIOS"))}
   bar.hidden=!show;document.body.classList.toggle("has-nbar",show);
   if(!show)return;
