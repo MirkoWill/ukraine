@@ -13,6 +13,9 @@
 // POST /ok          Lebenszeichen an die anderen Handys der Familie  { endpoint }
 // GET  /alive?p=…   Zeitpunkt der letzten Bestätigung „Mir geht’s gut“ (p = Zugangscode)
 // POST /alive       „Mir geht’s gut“ bestätigen  { p }
+// GET  /tg/setup    Telegram-Bot einmalig mit diesem Worker verbinden (Webhook setzen)
+// POST /tg          Nachrichten von Telegram (nur mit geheimem Header, den Telegram mitschickt)
+//                   Bot-Schlüssel als Secret TG_TOKEN in Cloudflare, nie im Quelltext.
 // POST /alive/pin   Zugangscode einmalig festlegen (nur solange noch keiner gespeichert ist)  { p }
 //                   Der Code steht nicht im Quelltext, im KV liegt nur sein SHA-256.
 //                   Nach 10 falschen Versuchen pro IP ist eine Stunde lang gesperrt.
@@ -259,6 +262,118 @@ async function pushAll(env, want = () => true) {
   } while (cursor);
 }
 
+// ---------- „Mir geht’s gut“ ----------
+// { at: letzte Bestätigung, list: alle Bestätigungen der letzten 24 Stunden }
+async function confirmAlive(env) {
+  const last = await kv(env).get("alive:main", "json");
+  if (last && Date.now() - Date.parse(last.at) < 5000) return last;
+  const at = new Date().toISOString();
+  const list = ((last && last.list) || (last && last.at ? [last.at] : []))
+    .filter((x) => Date.now() - Date.parse(x) < DAY).concat(at);
+  const now = { at, list };
+  await kv(env).put("alive:main", JSON.stringify(now));
+  return now;
+}
+
+// ---------- Telegram-Bot ----------
+const TG_TEXT = {
+  uk: {
+    ok: "✓ Зі мною все гаразд", status: "Статус",
+    askCode: "Будь ласка, введіть код доступу.", wrong: "Код неправильний.", locked: "Забагато спроб. Спробуйте через годину.",
+    welcome: "Готово. Кнопка «✓ Зі мною все гаразд» підтверджує, що все гаразд. «Статус» показує ситуацію в Чернігові.",
+    confirmed: (t) => `✓ Підтверджено о ${t} (за Києвом).`,
+    alert: "🔴 Повітряна тривога в Чернігові", clear: "🟢 У Чернігові тривоги немає", unknown: "Статус невідомий",
+    scope: { city: "для міста", raion: "для всього Чернігівського району", oblast: "для всієї області" },
+    since: "з", day: (h, c, l) => `За 24 год: ${h} год під тривогою, тривог: ${c} (${l}).`,
+    level: { quiet: "спокійно", normal: "звично", busy: "неспокійно" },
+    lastOk: (a) => `Останнє «все гаразд»: ${a} тому.`, never: "«Все гаразд» ще не підтверджували за добу.",
+    min: "хв", h: "год", app: "Застосунок",
+  },
+  ru: {
+    ok: "✓ Со мной всё в порядке", status: "Статус",
+    askCode: "Пожалуйста, введите код доступа.", wrong: "Неверный код.", locked: "Слишком много попыток. Попробуйте через час.",
+    welcome: "Готово. Кнопка «✓ Со мной всё в порядке» подтверждает, что всё хорошо. «Статус» показывает ситуацию в Чернигове.",
+    confirmed: (t) => `✓ Подтверждено в ${t} (по Киеву).`,
+    alert: "🔴 Воздушная тревога в Чернигове", clear: "🟢 В Чернигове тревоги нет", unknown: "Статус неизвестен",
+    scope: { city: "для города", raion: "для всего Черниговского района", oblast: "для всей области" },
+    since: "с", day: (h, c, l) => `За 24 ч: ${h} ч под тревогой, тревог: ${c} (${l}).`,
+    level: { quiet: "спокойно", normal: "обычно", busy: "неспокойно" },
+    lastOk: (a) => `Последнее «всё в порядке»: ${a} назад.`, never: "«Всё в порядке» за сутки ещё не подтверждали.",
+    min: "мин", h: "ч", app: "Приложение",
+  },
+  de: {
+    ok: "✓ Mir geht’s gut", status: "Status",
+    askCode: "Bitte den Zugangscode eingeben.", wrong: "Der Code stimmt nicht.", locked: "Zu viele Versuche. Bitte in einer Stunde noch einmal.",
+    welcome: "Fertig. Der Knopf „✓ Mir geht’s gut“ bestätigt, dass alles in Ordnung ist. „Status“ zeigt die Lage in Tschernihiw.",
+    confirmed: (t) => `✓ Bestätigt um ${t} Uhr (Kyjiwer Zeit).`,
+    alert: "🔴 Luftalarm in Tschernihiw", clear: "🟢 Kein Alarm in Tschernihiw", unknown: "Status unbekannt",
+    scope: { city: "für die Stadt", raion: "für den ganzen Bezirk Tschernihiw", oblast: "für die ganze Oblast" },
+    since: "seit", day: (h, c, l) => `Letzte 24 Std.: ${String(h).replace(".", ",")} Std. unter Alarm, ${c} Alarme (${l}).`,
+    level: { quiet: "ruhig", normal: "normal", busy: "unruhig" },
+    lastOk: (a) => `Letztes „Mir geht’s gut“: vor ${a}.`, never: "Heute wurde noch nicht bestätigt.",
+    min: "Min.", h: "Std.", app: "App",
+  },
+};
+const tgLang = (code) => (/^ru/.test(code || "") ? "ru" : /^de/.test(code || "") ? "de" : "uk");
+const kyivTime = (iso) => new Date(iso).toLocaleTimeString("uk-UA", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Kyiv" });
+const tgSecret = async (env) => (await subId("tg:" + env.TG_TOKEN)).replace(/[^A-Za-z0-9_-]/g, "");
+
+async function tgCall(env, method, body) {
+  const r = await fetch(`https://api.telegram.org/bot${env.TG_TOKEN}/${method}`, {
+    method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body),
+  });
+  return r.json().catch(() => ({}));
+}
+function tgKeyboard(T) {
+  return { keyboard: [[{ text: T.ok }], [{ text: T.status }]], resize_keyboard: true, is_persistent: true };
+}
+function ago(T, ms) {
+  const m = Math.max(0, Math.floor(ms / 60000));
+  if (m < 60) return `${m} ${T.min}`;
+  return `${Math.floor(m / 60)} ${T.h}` + (m % 60 ? ` ${m % 60} ${T.min}` : "");
+}
+async function tgStatus(env, T) {
+  let lines = [];
+  try {
+    const [areas] = await getAreas();
+    const c = areas.chernihiv_city;
+    if (c.status === "alert") lines.push(`${T.alert}${c.scope ? " (" + T.scope[c.scope] + ")" : ""}${c.since ? ", " + T.since + " " + kyivTime(c.since) : ""}`);
+    else lines.push(T.clear);
+  } catch (e) { lines.push(T.unknown); }
+  const d = last24(await readHist(env));
+  if (d && d.complete) lines.push(T.day(d.hours, d.count, T.level[d.level]));
+  const a = await kv(env).get("alive:main", "json");
+  lines.push(a && a.at && Date.now() - Date.parse(a.at) < DAY ? T.lastOk(ago(T, Date.now() - Date.parse(a.at))) : T.never);
+  lines.push(`${T.app}: ${SITE}`);
+  return lines.join("\n");
+}
+async function tgHandle(env, upd) {
+  const msg = upd.message;
+  if (!msg || !msg.chat || msg.chat.type !== "private") return;
+  const chat = msg.chat.id, text = String(msg.text || "").trim();
+  const T = TG_TEXT[tgLang(msg.from && msg.from.language_code)];
+  const send = (t, kb) => tgCall(env, "sendMessage", { chat_id: chat, text: t, ...(kb ? { reply_markup: kb } : {}), disable_web_page_preview: true });
+  const known = await kv(env).get("tgchat:" + chat);
+  if (!known) {
+    if (!text || text.startsWith("/")) return send(T.askCode);
+    const failKey = "tgfail:" + chat;
+    const fails = Number((await kv(env).get(failKey)) || 0);
+    if (fails >= 10) return send(T.locked);
+    if ((await subId("pin:" + text)) !== (await kv(env).get("alivePin"))) {
+      await kv(env).put(failKey, String(fails + 1), { expirationTtl: 3600 });
+      return send(T.wrong);
+    }
+    await kv(env).put("tgchat:" + chat, JSON.stringify({ t: Date.now() }));
+    return send(T.welcome, tgKeyboard(T));
+  }
+  const all = Object.values(TG_TEXT);
+  if (all.some((x) => x.ok === text) || /^\/ok\b/.test(text)) {
+    const now = await confirmAlive(env);
+    return send(T.confirmed(kyivTime(now.at)), tgKeyboard(T));
+  }
+  return send(await tgStatus(env, T), tgKeyboard(T));
+}
+
 // ---------- Handler ----------
 export default {
   async fetch(request, env, ctx) {
@@ -268,6 +383,21 @@ export default {
     if (path === "/vapid") {
       if (!kv(env)) return json({ error: "Kein KV-Speicher verbunden" }, 503);
       return json({ key: (await getVapid(env)).pub }, 200, { "cache-control": "no-store" });
+    }
+    if (path === "/tg/setup") {
+      if (!env.TG_TOKEN || !kv(env)) return json({ error: "TG_TOKEN oder KV fehlt" }, 503);
+      const url = new URL(request.url);
+      const r = await tgCall(env, "setWebhook", { url: url.origin + "/tg", secret_token: await tgSecret(env), allowed_updates: ["message"], drop_pending_updates: true });
+      await tgCall(env, "setMyCommands", { commands: [{ command: "status", description: "Статус / Status" }, { command: "ok", description: "✓ Все гаразд / Alles gut" }] });
+      return json({ ok: !!r.ok, telegram: r.description || "" }, 200, { "cache-control": "no-store" });
+    }
+    if (path === "/tg" && request.method === "POST") {
+      if (!env.TG_TOKEN || !kv(env)) return new Response("no", { status: 503 });
+      if (request.headers.get("x-telegram-bot-api-secret-token") !== (await tgSecret(env))) return new Response("forbidden", { status: 403 });
+      let upd;
+      try { upd = await request.json(); } catch (e) { return new Response("ok"); }
+      try { await tgHandle(env, upd); } catch (e) {}
+      return new Response("ok");
     }
     if (path === "/alive" || path === "/alive/pin") {
       if (!kv(env)) return json({ error: "Kein KV-Speicher verbunden" }, 503);
@@ -294,15 +424,7 @@ export default {
       }
       // { at: letzte Bestätigung, list: alle Bestätigungen der letzten 24 Stunden }
       const last = await kv(env).get("alive:main", "json");
-      if (request.method === "POST") {
-        if (last && Date.now() - Date.parse(last.at) < 5000) return json(last, 200, nostore);
-        const at = new Date().toISOString();
-        const list = ((last && last.list) || (last && last.at ? [last.at] : []))
-          .filter((x) => Date.now() - Date.parse(x) < DAY).concat(at);
-        const now = { at, list };
-        await kv(env).put("alive:main", JSON.stringify(now));
-        return json(now, 200, nostore);
-      }
+      if (request.method === "POST") return json(await confirmAlive(env), 200, nostore);
       if (last && last.list) last.list = last.list.filter((x) => Date.now() - Date.parse(x) < DAY);
       return json(last || {}, 200, nostore);
     }
