@@ -6,7 +6,7 @@
 
 const WORKER = "https://ukraine-alarm.plain-paper-0d28.workers.dev";
 const ICON = "icons/icon-192.png";
-const CACHE = "app-v4";
+const CACHE = "app-v5";
 const LIVE_CACHE = "live";
 const APP = [
   "./", "index.html", "manifest.webmanifest", "fonts/fonts.css", "data/stats.json",
@@ -48,6 +48,19 @@ const TEXT = {
     daily: { quiet: "Чернігів за добу: спокійно", normal: "Чернігів за добу: звично", busy: "Чернігів за добу: неспокійно" },
     dailyBody: (h, c) => `${h} год під тривогою, тривог: ${c}.`,
   },
+  ru: {
+    alert: "Воздушная тревога: Чернигов",
+    clear: "Отбой тревоги: Чернигов",
+    test: "Уведомления включены",
+    scope: { city: "Тревога для города Чернигова.", raion: "Тревога для всего Черниговского района, включая город.", oblast: "Тревога для всей Черниговской области, включая город." },
+    alertBody: "Пройдите в укрытие.",
+    clearBody: "Тревога отменена.",
+    testBody: "Так будет выглядеть уведомление о тревоге.",
+    ok: (n) => (n ? n + ": " : "") + "всё в порядке",
+    okBody: "Отправлено в ",
+    daily: { quiet: "Чернигов за сутки: спокойно", normal: "Чернигов за сутки: обычно", busy: "Чернигов за сутки: неспокойно" },
+    dailyBody: (h, c) => `${String(h).replace(".", ",")} ч под тревогой, тревог: ${c}.`,
+  },
   de: {
     alert: "Luftalarm in Tschernihiw",
     clear: "Entwarnung in Tschernihiw",
@@ -71,7 +84,7 @@ async function setting(key) {
     return "";
   }
 }
-const getLang = async () => ((await setting("lang")) === "de" ? "de" : "uk");
+const getLang = async () => { const l = await setting("lang"); return l === "de" || l === "ru" ? l : "uk"; };
 
 // ---------- Offline ----------
 self.addEventListener("install", (e) => {
@@ -143,7 +156,7 @@ self.addEventListener("push", (event) => {
       body = T.clearBody;
     } else if (fresh && ev.kind === "ok") {
       title = T.ok(ev.name);
-      body = T.okBody + new Date(ev.at).toLocaleTimeString(lang === "de" ? "de-DE" : "uk-UA", { hour: "2-digit", minute: "2-digit" });
+      body = T.okBody + new Date(ev.at).toLocaleTimeString({ de: "de-DE", ru: "ru-RU", uk: "uk-UA" }[lang], { hour: "2-digit", minute: "2-digit" });
     } else if (fresh && ev.kind === "daily" && ev.level) {
       title = T.daily[ev.level];
       body = T.dailyBody(ev.hours, ev.count);
