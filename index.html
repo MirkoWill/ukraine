@@ -146,6 +146,13 @@ table.heat td{width:24px;min-width:24px;height:24px;border-radius:4px;text-align
 .fam label{font-size:.9rem;color:var(--muted);display:flex;flex-direction:column;gap:4px}
 .famcode{font-size:1.5rem;font-weight:700;letter-spacing:.12em;font-variant-numeric:tabular-nums}
 .btn.big{font-size:1.15rem;padding:14px 18px;justify-content:center;width:100%}
+.alive{gap:10px}
+.alivebtn{width:100%;font:inherit;font-size:1.25rem;font-weight:700;padding:18px;border-radius:16px;border:2px solid var(--olive);background:var(--olive);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px}
+.alivebtn.done{background:var(--ok);border-color:var(--ok)}
+.alivebtn:disabled{opacity:.7}
+.aliveago{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;font-size:1.05rem}
+.aliveago b{font-size:1.35rem;font-variant-numeric:tabular-nums}
+.aliveago.ok b{color:var(--ok)} .aliveago.warn b{color:#8a5f00} .aliveago.bad b{color:var(--bad)}
 .flag{display:inline-block;font-size:.78rem;font-weight:700;color:var(--bad);margin-left:6px}
 
 ul.rules{margin:0;padding-left:1.15em;display:flex;flex-direction:column;gap:9px}
@@ -165,13 +172,6 @@ footer.foot nav a{color:#fff;text-underline-offset:4px}
 .legal{display:flex;flex-direction:column;gap:8px}
 .legal h2{font-family:var(--f-head);font-weight:400;font-size:1.6rem;color:var(--olive);margin-top:10px}
 .legal a{color:var(--olive-dark)}
-.nbar{position:fixed;left:0;right:0;z-index:19;background:var(--hero);color:#fff;padding:10px max(14px,env(safe-area-inset-right,0px)) 10px max(14px,env(safe-area-inset-left,0px));box-shadow:0 -4px 14px rgba(0,0,0,.12)}
-.nbar .inner{display:flex;align-items:center;gap:10px}
-.nbar svg{width:24px;height:24px;flex:none;color:var(--hero-ink)}
-.nbar span{flex:1;min-width:0;font-weight:600;line-height:1.25}
-.nbar .btn.solid{background:var(--hero-ink);color:var(--hero);border-color:var(--hero-ink);padding:8px 14px;white-space:nowrap}
-.nbarX{background:none;border:0;color:#fff;font-size:1.6rem;line-height:1;padding:4px 6px;cursor:pointer;opacity:.8}
-body.has-nbar{padding-bottom:calc(150px + env(safe-area-inset-bottom,0px))}
 nav.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);
   padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px);z-index:20}
 nav.tabs .inner{display:grid;grid-template-columns:repeat(4,1fr)}
@@ -215,27 +215,24 @@ nav.tabs a[aria-current="page"]{color:var(--olive)}
     <span id="nowSub" class="muted"></span>
     <figure class="quote" id="quote" hidden><blockquote id="quoteText"></blockquote><figcaption id="quoteSrc"></figcaption></figure>
   </div>
+  <div class="card alive" id="aliveCard">
+    <div id="aliveBody"></div>
+  </div>
   <div class="card day" id="dayCard" hidden>
     <div class="dayrow"><span class="muted small" data-i="dayLabel">Tschernihiw, letzte 24 Stunden</span><span class="daychip" id="dayChip"></span></div>
     <span id="dayText"></span>
     <span class="small muted" id="dayNote"></span>
   </div>
-  <div class="card" id="notifCard">
-    <h3 data-i="notifT">Benachrichtigungen</h3>
-    <p id="notifText" class="small"></p>
-    <div class="select-row" id="notifBtns"></div>
-    <label class="check" id="dailyRow" hidden><input type="checkbox" id="dailyChk"> <span data-i="dailyL">Tägliche Zusammenfassung</span></label>
-    <p id="notifHint" class="small muted"></p>
-  </div>
-  <div class="card" id="famCard">
-    <h3 data-i="famT">Familie</h3>
-    <p class="small" id="famIntro"></p>
-    <div id="famBody" class="fam"></div>
-  </div>
   <div class="card">
     <h3 data-i="routeNow">Strecke jetzt</h3>
     <div class="list" id="liveList"></div>
     <p class="small muted" data-i="liveNote">Grün: kein Alarm. Gelb: Alarm nur in einzelnen Bezirken der Oblast. Rot: Alarm. Wird etwa jede Minute aktualisiert und kann kurz hinterherhinken.</p>
+  </div>
+  <div class="card" id="notifCard">
+    <h3 data-i="notifT">Benachrichtigungen</h3>
+    <p id="notifText" class="small"></p>
+    <div class="select-row" id="notifBtns"></div>
+    <p id="notifHint" class="small muted"></p>
   </div>
   <div class="notice"><b data-i="appWarnT">Unterwegs zählt die offizielle App.</b> <span data-i="appWarn">Diese Seite kann verspätet sein. Die App „Повітряна тривога“ mit Ton warnt sofort.</span></div>
   <h2 class="sec" data-i="linksT">Live-Quellen</h2>
@@ -378,14 +375,6 @@ nav.tabs a[aria-current="page"]{color:var(--olive)}
 </div></footer>
 <div class="toast" id="toast" role="status" hidden></div>
 
-<div class="nbar" id="nbar" hidden>
-  <div class="inner">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10 21a2 2 0 0 0 4 0"/></svg>
-    <span id="nbarText"></span>
-    <button class="btn solid" type="button" id="nbarBtn"></button>
-    <button class="nbarX" type="button" id="nbarX" aria-label="Ausblenden">×</button>
-  </div>
-</div>
 <nav class="tabs" aria-label="Navigation"><div class="inner">
   <a href="#live" data-v="live"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10 21a2 2 0 0 0 4 0"/></svg><span data-i="tLive">Live</span></a>
   <a href="#zeiten" data-v="zeiten"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 20V12M10 20V6M15 20v-9M20 20V9"/></svg><span data-i="tZeit">Zeiten</span></a>
@@ -399,7 +388,7 @@ de:{
  footT:"Sicher in Tschernihiw",footBy:"Ein Service von",impT:"Impressum",dsT:"Datenschutz",impH1:"Angaben gemäß §\u00a05 DDG",impOwner:"Inh. Mirko Willbrandt",impFound:"Unternehmen in Gründung",impContact:"Kontakt",impTel:"Telefon",impMail:"E-Mail",impNotes:"Hinweise",
  impN1:"Diese Seite ist ein unentgeltliches Hilfsangebot für Reisende nach Tschernihiw. Alle Angaben ohne Gewähr. Die Statistik beruht auf vergangenen Luftalarmen und sagt keine Angriffe voraus. Der Live-Status kann verspätet oder unvollständig sein. Maßgeblich sind allein die offiziellen Warnungen der ukrainischen Behörden, insbesondere die App „Повітряна тривога“.",
  impN2:"Für die Inhalte verlinkter externer Seiten sind ausschließlich deren Betreiber verantwortlich.",
- dsH1:"Verantwortlich",dsH2:"Hosting",dsH3:"Live-Status",dsH4:"Im Browser gespeichert",dsH6:"Benachrichtigungen und Familie",dsPush:"Der Live-Status kommt von einem Dienst bei Cloudflare (Cloudflare, Inc., USA, zertifiziert unter dem EU-US Data Privacy Framework); dabei sieht Cloudflare Ihre IP-Adresse. Nur wenn Sie Benachrichtigungen einschalten, speichert dieser Dienst die Push-Adresse Ihres Browsers, Ihre Sprache, ob Sie die Tageszusammenfassung möchten und, falls Sie eine Familie verbinden, den Familien-Code und den eingetragenen Namen. Zugestellt werden die Benachrichtigungen über den Push-Dienst Ihres Browsers (bei Chrome: Google). Die Nachrichten enthalten selbst keinen Text. Rechtsgrundlage ist Ihre Einwilligung (Art. 6 Abs. 1 lit. a DSGVO). Mit „Ausschalten“ bzw. „Verbindung lösen“ werden die Angaben gelöscht bzw. entfernt.",dsH5:"Ihre Rechte",
+ dsH1:"Verantwortlich",dsH2:"Hosting",dsH3:"Live-Status",dsH4:"Im Browser gespeichert",dsH6:"Benachrichtigungen und Familie",dsPush:"Der Live-Status kommt von einem Dienst bei Cloudflare (Cloudflare, Inc., USA, zertifiziert unter dem EU-US Data Privacy Framework); dabei sieht Cloudflare Ihre IP-Adresse. Nur wenn Sie Benachrichtigungen einschalten, speichert dieser Dienst die Push-Adresse Ihres Browsers, Ihre Sprache, ob Sie die Tageszusammenfassung möchten und, falls Sie eine Familie verbinden, den Familien-Code und den eingetragenen Namen. Zugestellt werden die Benachrichtigungen über den Push-Dienst Ihres Browsers (bei Chrome: Google). Die Nachrichten enthalten selbst keinen Text. Für „Mir geht’s gut“ speichert der Dienst nur den Zeitpunkt der letzten Bestätigung, unter einem geheimen Schlüssel, den nur die verbundenen Handys kennen. Rechtsgrundlage ist Ihre Einwilligung (Art. 6 Abs. 1 lit. a DSGVO). Mit „Ausschalten“ bzw. „Verbindung lösen“ werden die Angaben gelöscht bzw. entfernt.",dsH5:"Ihre Rechte",
  dsHost:"Die Seite liegt bei GitHub Pages (GitHub, Inc., USA). Beim Aufruf verarbeitet GitHub technisch notwendige Daten wie die IP-Adresse, um die Seite auszuliefern und vor Missbrauch zu schützen (Art. 6 Abs. 1 lit. f DSGVO). GitHub ist unter dem EU-US Data Privacy Framework zertifiziert.",
  dsLive:"Für den Live-Status fragt die Seite jede Minute den Dienst bei Cloudflare (siehe unten), ersatzweise eine Datei bei GitHub (api.github.com, raw.githubusercontent.com). Dabei wird Ihre IP-Adresse übertragen. Angaben über Sie oder Ihren Standort werden nicht gesendet.",
  dsLocal:"Gewählte Sprache und Schriftgröße werden nur auf Ihrem Gerät gespeichert (localStorage). Es gibt keine Cookies, keine Statistik- oder Werbedienste. Schriften werden von dieser Seite selbst geladen, nicht von Google.",
@@ -420,7 +409,7 @@ de:{
  scope:{city:"Gilt für die Stadt.",raion:"Gilt für den ganzen Bezirk Tschernihiw, auch die Stadt.",oblast:"Gilt für die ganze Oblast, auch die Stadt."},
  notifT:"Benachrichtigungen",notifOff:"Bei Beginn und Ende eines Alarms in der Stadt Tschernihiw meldet sich das Handy, auch wenn die Seite geschlossen ist.",
  notifOn:"Eingeschaltet. Bei Alarm und Entwarnung in der Stadt Tschernihiw kommt eine Benachrichtigung.",
- notifDenied:"Benachrichtigungen sind im Browser blockiert. In den Website-Einstellungen des Browsers für diese Seite erlauben.",
+ notifDenied:"Chrome darf auf diesem Handy keine Benachrichtigungen senden. Falls gewünscht: Android-Einstellungen → Apps → Chrome → Benachrichtigungen einschalten. Nötig ist das nicht.",
  notifNo:"Dieser Browser unterstützt keine Benachrichtigungen.",
  notifIOS:"Auf dem iPhone: zuerst über „Teilen“ → „Zum Home-Bildschirm“ hinzufügen, die App von dort öffnen und hier einschalten.",
  notifQuiet:"Der Browser hat nicht nachgefragt. Auf das Symbol links neben der Adresse tippen → Berechtigungen → Benachrichtigungen erlauben. Unter Android auch prüfen: Einstellungen → Apps → Chrome → Benachrichtigungen an.",nbarText:"Bei Alarm in Tschernihiw benachrichtigen",openChrome:"In Chrome öffnen",notifChrome:"Hier sind Benachrichtigungen nicht möglich, zum Beispiel weil die Seite in einem Messenger geöffnet wurde. Bitte in Chrome öffnen und dort einschalten.",
@@ -431,7 +420,11 @@ de:{
  famCodeHint:"Diesen Code auf dem anderen Handy unter „Code eingeben“ eintragen. Nicht öffentlich teilen.",
  famOk:"Mir geht’s gut",famOkSent:"Gesendet. Die Familie wird benachrichtigt.",famWait:"Gerade erst gesendet. Bitte kurz warten.",famLeave:"Verbindung lösen",
  famCopy:"Kopieren",famCopied:"Kopiert",famBadCode:"Der Code passt nicht. Er sieht so aus: ABCDE-FGHJK",famNameMissing:"Bitte zuerst deinen Namen eintragen.",
- offline:"offline, letzter bekannter Stand",nbarHow:"So geht’s",notifEnable:"Einschalten",notifBusy:"wird eingeschaltet …",notifTest:"Test senden",notifDisable:"Ausschalten",notifSent:"Test gesendet, kommt in wenigen Sekunden.",notifErr:"Hat nicht geklappt. Bitte später noch einmal versuchen.",
+ offline:"offline, letzter bekannter Stand",
+ aliveT:"Mir geht’s gut",aliveSetup:"Einrichten",aliveSetupText:"Einmal einrichten: auf „Einrichten“ tippen, dann unter „Mit dem anderen Handy verbinden“ den Link per Signal schicken und auf dem anderen Handy einmal öffnen.",
+ aliveBtn:"Mir geht’s gut",aliveDone:"Bestätigt um {h}",aliveAgo:"Zuletzt bestätigt vor:",aliveNever:"noch nie",minShort:"Min.",hShort:"Std.",
+ aliveShare:"Mit dem anderen Handy verbinden",aliveShareText:"Diesen Link einmal per Signal schicken und auf dem anderen Handy öffnen. Danach sehen beide denselben Stand. Den Link nicht öffentlich teilen.",
+ aliveCopy:"Link teilen",aliveLinked:"Verbunden. „Mir geht’s gut“ ist jetzt mit dem anderen Handy gekoppelt.",aliveErr:"Hat nicht geklappt, bitte noch einmal tippen.",aliveOffline:"Gerade keine Verbindung, der Stand kann veraltet sein.",nbarHow:"So geht’s",notifEnable:"Einschalten",notifBusy:"wird eingeschaltet …",notifTest:"Test senden",notifDisable:"Ausschalten",notifSent:"Test gesendet, kommt in wenigen Sekunden.",notifErr:"Hat nicht geklappt. Bitte später noch einmal versuchen.",
  notifHint:"Ersetzt nicht die App „Повітряна тривога“, die direkt vom Staat warnt. Diese Benachrichtigung kann bis zu einer Minute später kommen.",
  failed:"Live-Status gerade nicht abrufbar. Bitte die App oder alerts.in.ua nutzen.",typeART:"Artilleriegefahr",
  zLead:"Wie oft war zu welcher Uhrzeit Luftalarm? Kyjiwer Zeit, eine Stunde später als in Berlin.",
@@ -480,7 +473,7 @@ uk:{
  footT:"Безпечно в Чернігові",footBy:"Сервіс від",impT:"Імпресум",dsT:"Захист даних",impH1:"Відомості згідно з §\u00a05 DDG (Німеччина)",impOwner:"Власник: Мірко Вільбрандт",impFound:"Підприємство в процесі заснування",impContact:"Контакти",impTel:"Телефон",impMail:"Ел. пошта",impNotes:"Примітки",
  impN1:"Ця сторінка — безоплатна допомога для тих, хто їде до Чернігова. Усі дані без гарантії. Статистика ґрунтується на минулих тривогах і не передбачає атак. Статус наживо може запізнюватися або бути неповним. Визначальними є лише офіційні попередження українських органів влади, зокрема застосунок «Повітряна тривога».",
  impN2:"За зміст зовнішніх сайтів, на які ведуть посилання, відповідають виключно їхні власники.",
- dsH1:"Відповідальна особа",dsH2:"Хостинг",dsH3:"Статус наживо",dsH4:"Збережено в браузері",dsH6:"Сповіщення та родина",dsPush:"Статус наживо надає сервіс у Cloudflare (Cloudflare, Inc., США, сертифіковано за EU-US Data Privacy Framework); при цьому Cloudflare бачить вашу IP-адресу. Лише якщо ви вмикаєте сповіщення, сервіс зберігає push-адресу вашого браузера, мову, чи потрібен щоденний підсумок, а якщо ви поєднуєте родину, — код родини та введене ім'я. Сповіщення доставляє push-сервіс вашого браузера (у Chrome — Google). Самі повідомлення не містять тексту. Правова підстава — ваша згода (ст. 6 ч. 1 п. a GDPR). Кнопки «Вимкнути» та «Від'єднатися» видаляють ці дані.",dsH5:"Ваші права",
+ dsH1:"Відповідальна особа",dsH2:"Хостинг",dsH3:"Статус наживо",dsH4:"Збережено в браузері",dsH6:"Сповіщення та родина",dsPush:"Статус наживо надає сервіс у Cloudflare (Cloudflare, Inc., США, сертифіковано за EU-US Data Privacy Framework); при цьому Cloudflare бачить вашу IP-адресу. Лише якщо ви вмикаєте сповіщення, сервіс зберігає push-адресу вашого браузера, мову, чи потрібен щоденний підсумок, а якщо ви поєднуєте родину, — код родини та введене ім'я. Сповіщення доставляє push-сервіс вашого браузера (у Chrome — Google). Самі повідомлення не містять тексту. Для «Зі мною все гаразд» сервіс зберігає лише час останнього підтвердження під секретним ключем, відомим тільки поєднаним телефонам. Правова підстава — ваша згода (ст. 6 ч. 1 п. a GDPR). Кнопки «Вимкнути» та «Від'єднатися» видаляють ці дані.",dsH5:"Ваші права",
  dsHost:"Сторінка розміщена на GitHub Pages (GitHub, Inc., США). Під час відкриття GitHub обробляє технічно необхідні дані, як-от IP-адресу, щоб показати сторінку і захистити від зловживань (ст. 6 ч. 1 п. f GDPR). GitHub сертифіковано за EU-US Data Privacy Framework.",
  dsLive:"Для статусу наживо сторінка щохвилини звертається до сервісу в Cloudflare (див. нижче), а як запасний варіант — до файлу на GitHub (api.github.com, raw.githubusercontent.com). При цьому передається ваша IP-адреса. Жодних даних про вас чи ваше місцезнаходження не надсилається.",
  dsLocal:"Обрана мова і розмір шрифту зберігаються лише на вашому пристрої (localStorage). Немає cookies, сервісів статистики чи реклами. Шрифти завантажуються з самої сторінки, не з Google.",
@@ -501,7 +494,7 @@ uk:{
  scope:{city:"Тривога для міста.",raion:"Тривога для всього Чернігівського району, включно з містом.",oblast:"Тривога для всієї області, включно з містом."},
  notifT:"Сповіщення",notifOff:"На початку і наприкінці тривоги в місті Чернігові телефон повідомить вас, навіть коли сторінку закрито.",
  notifOn:"Увімкнено. Про тривогу й відбій у місті Чернігові надійде сповіщення.",
- notifDenied:"Сповіщення заблоковано в браузері. Дозвольте їх у налаштуваннях сайту для цієї сторінки.",
+ notifDenied:"Chrome не може надсилати сповіщення на цьому телефоні. За бажанням: Налаштування Android → Застосунки → Chrome → Сповіщення. Це не обов'язково.",
  notifNo:"Цей браузер не підтримує сповіщення.",
  notifIOS:"На iPhone: спершу «Поділитися» → «На початковий екран», відкрийте застосунок звідти й увімкніть тут.",
  notifQuiet:"Браузер не запитав дозволу. Торкніться значка ліворуч від адреси → Дозволи → дозвольте сповіщення. В Android також перевірте: Налаштування → Застосунки → Chrome → Сповіщення увімкнено.",nbarText:"Сповіщати про тривогу в Чернігові",openChrome:"Відкрити в Chrome",notifChrome:"Тут сповіщення неможливі, наприклад, бо сторінку відкрито в месенджері. Відкрийте її в Chrome і ввімкніть там.",
@@ -512,7 +505,11 @@ uk:{
  famCodeHint:"Введіть цей код на іншому телефоні в «Ввести код». Не поширюйте його публічно.",
  famOk:"Зі мною все гаразд",famOkSent:"Надіслано. Родина отримає сповіщення.",famWait:"Щойно надіслано. Зачекайте трохи.",famLeave:"Від'єднатися",
  famCopy:"Копіювати",famCopied:"Скопійовано",famBadCode:"Код неправильний. Він має такий вигляд: ABCDE-FGHJK",famNameMissing:"Спершу введіть своє ім'я.",
- offline:"офлайн, останній відомий стан",nbarHow:"Як увімкнути",notifEnable:"Увімкнути",notifBusy:"вмикаємо …",notifTest:"Надіслати тест",notifDisable:"Вимкнути",notifSent:"Тест надіслано, надійде за кілька секунд.",notifErr:"Не вдалося. Спробуйте пізніше.",
+ offline:"офлайн, останній відомий стан",
+ aliveT:"Зі мною все гаразд",aliveSetup:"Налаштувати",aliveSetupText:"Налаштуйте один раз: натисніть «Налаштувати», потім у розділі «Поєднати з іншим телефоном» надішліть посилання через Signal і один раз відкрийте його на іншому телефоні.",
+ aliveBtn:"Зі мною все гаразд",aliveDone:"Підтверджено о {h}",aliveAgo:"Від останнього підтвердження минуло:",aliveNever:"ще жодного разу",minShort:"хв",hShort:"год",
+ aliveShare:"Поєднати з іншим телефоном",aliveShareText:"Надішліть це посилання один раз через Signal і відкрийте на іншому телефоні. Після цього обидва бачитимуть той самий стан. Не поширюйте посилання публічно.",
+ aliveCopy:"Поділитися посиланням",aliveLinked:"Поєднано. «Зі мною все гаразд» тепер пов'язано з іншим телефоном.",aliveErr:"Не вдалося, натисніть ще раз.",aliveOffline:"Зараз немає з'єднання, дані можуть бути застарілими.",nbarHow:"Як увімкнути",notifEnable:"Увімкнути",notifBusy:"вмикаємо …",notifTest:"Надіслати тест",notifDisable:"Вимкнути",notifSent:"Тест надіслано, надійде за кілька секунд.",notifErr:"Не вдалося. Спробуйте пізніше.",
  notifHint:"Не замінює застосунок «Повітряна тривога», який попереджає безпосередньо від держави. Це сповіщення може надійти із запізненням до хвилини.",
  failed:"Статус зараз недоступний. Користуйтеся застосунком або alerts.in.ua.",typeART:"Загроза артобстрілу",
  zLead:"Як часто о певній годині була повітряна тривога? За київським часом, на годину пізніше, ніж у Берліні.",
@@ -589,7 +586,7 @@ const pushOK="serviceWorker" in navigator&&"PushManager" in window&&"Notificatio
 const isAndroid=/Android/i.test(navigator.userAgent);
 const inApp=/; wv\)|FBAN|FBAV|Instagram|Telegram|WhatsApp|Line\/|Viber|GSA\//i.test(navigator.userAgent);
 const chromeIntent=()=>"intent://"+location.host+location.pathname+"#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url="+encodeURIComponent(location.href)+";end";
-const needChrome=()=>isAndroid&&(inApp||!pushOK||Notification.permission==="denied");
+const needChrome=()=>isAndroid&&(inApp||!pushOK);
 const openChrome=()=>{location.href=chromeIntent()};
 let swReg=null,pushSub=null,lastCity=null;
 function saveLang(){try{caches.open("settings").then(c=>c.put("lang",new Response(lang)))}catch(e){}}
@@ -610,7 +607,7 @@ async function enablePush(){
     swReg=swReg||await navigator.serviceWorker.register("sw.js");await navigator.serviceWorker.ready;
     const {key}=await (await fetch(WORKER+"/vapid",{cache:"no-store"})).json();
     pushSub=await withTimeout(swReg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64uToBytes(key)}),20000);
-    await post("/subscribe",{subscription:pushSub.toJSON(),lang});saveLang();syncFam().catch(()=>{});
+    await post("/subscribe",{subscription:pushSub.toJSON(),lang});saveLang();
     renderNotif();toast(t("notifOn"));
   }catch(e){renderNotif();toast(t("notifErr"))}
 }
@@ -630,67 +627,49 @@ function renderNotif(){
   else{text=t("notifOff");btns=btn("nOn",t("notifEnable"),"btn solid")}
   $("notifText").textContent=text;$("notifBtns").innerHTML=btns;$("notifHint").textContent=hint;
   $("nOn")&&($("nOn").onclick=enablePush);$("nOff")&&($("nOff").onclick=disablePush);$("nTest")&&($("nTest").onclick=testPush);$("nChrome")&&($("nChrome").onclick=openChrome);
-  renderBar();renderFam();
-  $("dailyRow").hidden=!pushSub;$("dailyChk").checked=store.get("daily")==="1";
 }
-/* ---------- Familie und Tageszusammenfassung ---------- */
-const CODE_ABC="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-function newCode(){const r=crypto.getRandomValues(new Uint8Array(10));const s=[...r].map(x=>CODE_ABC[x%CODE_ABC.length]).join("");return s.slice(0,5)+"-"+s.slice(5)}
-function saveFamCache(){try{caches.open("settings").then(c=>c.put("family",new Response(store.get("famCode")||"")))}catch(e){}}
-async function syncFam(){
-  saveFamCache();
-  if(!pushSub)return;
-  await post("/family",{endpoint:pushSub.endpoint,family:store.get("famCode")||null,name:store.get("famName")||"",daily:store.get("daily")==="1"});
+/* ---------- „Mir geht’s gut“ ----------
+   Beide Handys teilen einen geheimen Schlüssel (kommt einmal über den Link …/#ok-SCHLÜSSEL).
+   Der Worker speichert nur den Zeitpunkt der letzten Bestätigung. */
+let ALIVE=null,aliveErr=false;
+function aliveKey(){return store.get("aliveKey")||""}
+function takeKeyFromHash(){const m=location.hash.match(/^#ok-([A-Za-z0-9]{16,40})$/);if(m){store.set("aliveKey",m[1]);history.replaceState(null,"",location.pathname+"#live");toast(t("aliveLinked"))}}
+function newAliveKey(){const a="ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";return [...crypto.getRandomValues(new Uint8Array(24))].map(x=>a[x%a.length]).join("")}
+async function loadAlive(){
+  const k=aliveKey();if(!k){renderAlive();return}
+  try{const r=await fetch(WORKER+"/alive?k="+k+"&t="+Date.now(),{cache:"no-store"});ALIVE=await r.json();aliveErr=false}catch(e){aliveErr=true}
+  renderAlive();
 }
-function renderFam(){
-  const body=$("famBody"),code=store.get("famCode"),name=store.get("famName")||"";
-  if(!pushSub){$("famIntro").textContent=t("famNeedPush");body.innerHTML="";return}
-  $("famIntro").textContent=t("famIntro");
-  const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-  const nameField=`<label for="famNameIn">${t("famName")}<input type="text" id="famNameIn" maxlength="30" value="${esc(name)}" autocomplete="given-name"></label>`;
-  if(code){
-    body.innerHTML=`<button class="btn solid big" type="button" id="famOkBtn">✓ ${t("famOk")}</button>
-      ${nameField}
-      <div><span class="small muted">${t("famCodeL")}</span><div class="select-row"><span class="famcode" id="famCodeTxt">${code}</span><button class="btn" type="button" id="famCopyBtn">${t("famCopy")}</button></div><p class="small muted">${t("famCodeHint")}</p></div>
-      <div><button class="btn" type="button" id="famLeaveBtn">${t("famLeave")}</button></div>`;
-    $("famOkBtn").onclick=sendOk;
-    $("famCopyBtn").onclick=async()=>{try{await navigator.clipboard.writeText(code);toast(t("famCopied"))}catch(e){const r=document.createRange();r.selectNodeContents($("famCodeTxt"));const s=getSelection();s.removeAllRanges();s.addRange(r)}};
-    $("famLeaveBtn").onclick=async()=>{store.set("famCode","");renderFam();try{await syncFam()}catch(e){}};
-  }else{
-    body.innerHTML=`${nameField}
-      <div class="select-row"><button class="btn solid" type="button" id="famNewBtn">${t("famNew")}</button></div>
-      <label for="famCodeIn">${t("famJoin")}<input type="text" id="famCodeIn" placeholder="ABCDE-FGHJK" autocapitalize="characters" autocomplete="off"></label>
-      <div class="select-row"><button class="btn" type="button" id="famJoinBtn">${t("famJoinBtn")}</button></div>`;
-    const needName=()=>{const n=$("famNameIn").value.trim();if(!n){toast(t("famNameMissing"));$("famNameIn").focus();return false}store.set("famName",n);return true};
-    $("famNewBtn").onclick=async()=>{if(!needName())return;store.set("famCode",newCode());renderFam();try{await syncFam()}catch(e){toast(t("notifErr"))}};
-    $("famJoinBtn").onclick=async()=>{if(!needName())return;const c=$("famCodeIn").value.toUpperCase().replace(/[^A-Z0-9]/g,"");
-      if(c.length!==10){toast(t("famBadCode"));return}
-      store.set("famCode",c.slice(0,5)+"-"+c.slice(5));renderFam();try{await syncFam()}catch(e){toast(t("notifErr"))}};
+async function pressAlive(){
+  const b=$("aliveBtn");if(b)b.disabled=true;
+  try{const r=await fetch(WORKER+"/alive",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({k:aliveKey()})});if(!r.ok)throw 0;ALIVE=await r.json();aliveErr=false}
+  catch(e){toast(t("aliveErr"))}
+  renderAlive();
+}
+function fmtAgo(min){if(min<60)return min+" "+t("minShort");const h=Math.floor(min/60),m=min%60;return h+" "+t("hShort")+(m?" "+m+" "+t("minShort"):"")}
+function renderAlive(){
+  const box=$("aliveBody"),k=aliveKey();
+  if(!k){
+    box.innerHTML=`<h3>${t("aliveT")}</h3><p class="small">${t("aliveSetupText")}</p><div class="select-row"><button class="btn solid" type="button" id="aliveSetup">${t("aliveSetup")}</button></div>`;
+    $("aliveSetup").onclick=()=>{store.set("aliveKey",newAliveKey());renderAlive();loadAlive()};
+    return;
   }
-  $("famNameIn").onchange=async e=>{store.set("famName",e.target.value.trim());try{await syncFam()}catch(err){}};
+  const at=ALIVE&&ALIVE.at?Date.parse(ALIVE.at):null;
+  const min=at?Math.max(0,Math.floor((Date.now()-at)/60000)):null;
+  const fresh=min!==null&&min<15;
+  const cls=min===null?"bad":min<45?"ok":min<120?"warn":"bad";
+  const link=location.origin+location.pathname+"#ok-"+k;
+  box.innerHTML=`<div class="fam">
+    <button class="alivebtn${fresh?" done":""}" type="button" id="aliveBtn">${fresh?"✓ "+fmt(t("aliveDone"),{h:localTime(ALIVE.at)}):"✓ "+t("aliveBtn")}</button>
+    <div class="aliveago ${cls}"><span>${t("aliveAgo")}</span><b>${min===null?t("aliveNever"):fmtAgo(min)}</b></div>
+    ${aliveErr?`<p class="small muted">${t("aliveOffline")}</p>`:""}
+    <details class="small"><summary>${t("aliveShare")}</summary><p class="muted">${t("aliveShareText")}</p>
+      <div class="select-row"><button class="btn" type="button" id="aliveCopy">${t("aliveCopy")}</button></div><p><code class="topic" id="aliveLink">${link}</code></p></details>
+  </div>`;
+  $("aliveBtn").onclick=pressAlive;
+  $("aliveCopy").onclick=async()=>{try{if(navigator.share){await navigator.share({text:link});return}await navigator.clipboard.writeText(link);toast(t("famCopied"))}catch(e){const r=document.createRange();r.selectNodeContents($("aliveLink"));const s=getSelection();s.removeAllRanges();s.addRange(r)}};
 }
-async function sendOk(){
-  const b=$("famOkBtn");b.disabled=true;
-  try{const r=await fetch(WORKER+"/ok",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({endpoint:pushSub.endpoint})});
-    toast(r.ok?t("famOkSent"):r.status===429?t("famWait"):t("notifErr"))}
-  catch(e){toast(t("notifErr"))}
-  setTimeout(()=>{if($("famOkBtn"))$("famOkBtn").disabled=false},3000);
-}
-
-// Leiste unten über der Navigation, solange Benachrichtigungen aus sind
-function renderBar(){
-  const bar=$("nbar"),dismissed=store.get("nbarOff")==="1";
-  let show=!pushSub&&!dismissed&&(pushOK||isIOS),label=t("notifEnable"),act=enablePush;
-  if(needChrome()){show=!pushSub&&!dismissed;label=t("openChrome");act=openChrome}
-  else if(pushOK&&Notification.permission==="denied"){label=t("nbarHow");act=()=>toast(t("notifQuiet"))}
-  if(!pushOK&&isIOS){label=t("nbarHow");act=()=>toast(t("notifIOS"))}
-  bar.hidden=!show;document.body.classList.toggle("has-nbar",show);
-  if(!show)return;
-  bar.style.bottom=document.querySelector("nav.tabs").offsetHeight+"px";
-  $("nbarText").textContent=t("nbarText");$("nbarBtn").textContent=label;$("nbarBtn").onclick=act;
-  $("nbarX").onclick=()=>{store.set("nbarOff","1");renderBar()};
-}
-window.addEventListener("resize",()=>{if(!$("nbar").hidden)renderBar()});
+setInterval(()=>{if(aliveKey())renderAlive()},30000);
 // Ohne Push-Abo: solange die Seite offen ist, bei Statuswechsel lokal melden
 function notifyLocal(s){
   const prev=lastCity;lastCity=s;
@@ -906,13 +885,12 @@ $("areaSel").onchange=e=>{area=e.target.value;renderStats()};
 $("periodSeg").onclick=e=>{const b=e.target.closest("button");if(b){period=b.dataset.p;renderStats()}};
 $("modeSeg").onclick=e=>{const b=e.target.closest("button");if(b){mode=b.dataset.m;renderPlan()}};
 $("dep").onchange=e=>{dep=+e.target.value;renderPlan()};
-window.addEventListener("hashchange",route);
-document.addEventListener("visibilitychange",()=>{if(!document.hidden)loadLive()});
-setInterval(loadLive,60000);
+window.addEventListener("hashchange",()=>{if(/^#ok-/.test(location.hash)){takeKeyFromHash();loadAlive()}route()});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden){loadLive();loadAlive()}});
+setInterval(()=>{loadLive();loadAlive()},60000);
 
-$("dailyChk").onchange=async e=>{store.set("daily",e.target.checked?"1":"");try{await syncFam()}catch(err){toast(t("notifErr"))}};
 window.addEventListener("online",loadLive);window.addEventListener("offline",()=>{if(LIVE)renderLive()});
-applyText();route();loadLive();renderKm();initPush();saveLang();saveFamCache();
+takeKeyFromHash();applyText();route();loadLive();loadAlive();renderKm();initPush();saveLang();
 fetch("data/stats.json").then(r=>r.json()).then(d=>{STATS=d;renderStats()}).catch(()=>{$("srcNote").textContent="data/stats.json?"});
 </script>
 </body>

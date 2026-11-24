@@ -11,6 +11,10 @@
 // POST /family      Familie, Name und Tageszusammenfassung zu einem Abo speichern
 //                   { endpoint, family, name, daily }
 // POST /ok          Lebenszeichen an die anderen Handys der Familie  { endpoint }
+// GET  /alive?k=…   Zeitpunkt der letzten Bestätigung „Mir geht’s gut“
+// POST /alive       „Mir geht’s gut“ bestätigen  { k }
+//                   k ist ein geheimer Schlüssel, den beide Handys über einen Einrichtungs-Link
+//                   bekommen. Gespeichert wird nur der Zeitpunkt, unter dem SHA-256 des Schlüssels.
 //
 // Quelle: siren.pp.ua (mit Bezirken und Gemeinden), Ersatz: ubilling.net.ua (nur Oblaste).
 //
@@ -254,6 +258,23 @@ export default {
     if (path === "/vapid") {
       if (!kv(env)) return json({ error: "Kein KV-Speicher verbunden" }, 503);
       return json({ key: (await getVapid(env)).pub }, 200, { "cache-control": "no-store" });
+    }
+    if (path === "/alive") {
+      if (!kv(env)) return json({ error: "Kein KV-Speicher verbunden" }, 503);
+      let k = new URL(request.url).searchParams.get("k");
+      if (request.method === "POST") {
+        try { k = (await request.json()).k; } catch (e) { k = null; }
+      }
+      if (typeof k !== "string" || !/^[A-Za-z0-9]{16,40}$/.test(k)) return json({ error: "Ungültiger Schlüssel" }, 400);
+      const id = "alive:" + (await subId("alive:" + k));
+      const last = await kv(env).get(id, "json");
+      if (request.method === "POST") {
+        if (last && Date.now() - Date.parse(last.at) < 5000) return json(last, 200, { "cache-control": "no-store" });
+        const now = { at: new Date().toISOString() };
+        await kv(env).put(id, JSON.stringify(now));
+        return json(now, 200, { "cache-control": "no-store" });
+      }
+      return json(last || {}, 200, { "cache-control": "no-store" });
     }
     if (path === "/event") {
       if (!kv(env)) return json({}, 200, { "cache-control": "no-store" });
