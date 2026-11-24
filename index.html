@@ -205,7 +205,7 @@ nav.tabs a[aria-current="page"]{color:var(--olive)}
     <div class="mark"><span>Безпечно в</span> <b>Чернігові</b></div>
     <label for="gateIn" class="muted">Код доступу / Код доступа / Zugangscode</label>
     <input type="password" id="gateIn" inputmode="numeric" maxlength="32" autofocus>
-    <button class="btn solid big" type="submit" id="gateBtn">Відкрити / Öffnen</button>
+    <button class="btn solid big" type="submit" id="gateBtn">Відкрити · Открыть · Öffnen</button>
     <p class="err" id="gateErr" role="alert"></p>
   </form>
 </div>
@@ -955,7 +955,7 @@ $("gateForm").onsubmit=async e=>{
     const r=await fetch(WORKER+"/alive?p="+encodeURIComponent(v)+"&t="+Date.now(),{cache:"no-store"});
     if(r.ok){store.set("alivePin",v);ALIVE=await r.json();document.documentElement.classList.remove("locked");renderAlive();loadLive();window.scrollTo(0,0)}
     else if(r.status===429)$("gateErr").textContent="Забагато спроб, спробуйте через годину / Zu viele Versuche, bitte in einer Stunde";
-    else $("gateErr").textContent="Код неправильний / Code falsch";
+    else $("gateErr").textContent="Код неправильний / Неверный код / Code falsch";
   }catch(err){$("gateErr").textContent="Немає з'єднання / Keine Verbindung"}
   $("gateBtn").disabled=false;
 };
