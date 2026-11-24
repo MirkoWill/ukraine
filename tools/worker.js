@@ -11,10 +11,11 @@
 // POST /family      Familie, Name und Tageszusammenfassung zu einem Abo speichern
 //                   { endpoint, family, name, daily }
 // POST /ok          Lebenszeichen an die anderen Handys der Familie  { endpoint }
-// GET  /alive?k=…   Zeitpunkt der letzten Bestätigung „Mir geht’s gut“
-// POST /alive       „Mir geht’s gut“ bestätigen  { k }
-//                   k ist ein geheimer Schlüssel, den beide Handys über einen Einrichtungs-Link
-//                   bekommen. Gespeichert wird nur der Zeitpunkt, unter dem SHA-256 des Schlüssels.
+// GET  /alive?p=…   Zeitpunkt der letzten Bestätigung „Mir geht’s gut“ (p = Zugangscode)
+// POST /alive       „Mir geht’s gut“ bestätigen  { p }
+// POST /alive/pin   Zugangscode einmalig festlegen (nur solange noch keiner gespeichert ist)  { p }
+//                   Der Code steht nicht im Quelltext, im KV liegt nur sein SHA-256.
+//                   Nach 10 falschen Versuchen pro IP ist eine Stunde lang gesperrt.
 //
 // Quelle: siren.pp.ua (mit Bezirken und Gemeinden), Ersatz: ubilling.net.ua (nur Oblaste).
 //
@@ -259,22 +260,37 @@ export default {
       if (!kv(env)) return json({ error: "Kein KV-Speicher verbunden" }, 503);
       return json({ key: (await getVapid(env)).pub }, 200, { "cache-control": "no-store" });
     }
-    if (path === "/alive") {
+    if (path === "/alive" || path === "/alive/pin") {
       if (!kv(env)) return json({ error: "Kein KV-Speicher verbunden" }, 503);
-      let k = new URL(request.url).searchParams.get("k");
+      const nostore = { "cache-control": "no-store" };
+      let p = new URL(request.url).searchParams.get("p");
       if (request.method === "POST") {
-        try { k = (await request.json()).k; } catch (e) { k = null; }
+        try { p = (await request.json()).p; } catch (e) { p = null; }
       }
-      if (typeof k !== "string" || !/^[A-Za-z0-9]{16,40}$/.test(k)) return json({ error: "Ungültiger Schlüssel" }, 400);
-      const id = "alive:" + (await subId("alive:" + k));
-      const last = await kv(env).get(id, "json");
+      if (typeof p !== "string" || !/^[0-9A-Za-z]{4,32}$/.test(p)) return json({ error: "Code fehlt" }, 400, nostore);
+      const hash = await subId("pin:" + p);
+      const stored = await kv(env).get("alivePin");
+      if (path === "/alive/pin") {
+        if (stored) return json({ error: "Code ist schon festgelegt" }, 409, nostore);
+        await kv(env).put("alivePin", hash);
+        return json({ ok: true }, 200, nostore);
+      }
+      const ip = request.headers.get("cf-connecting-ip") || "?";
+      const failKey = "fail:" + ip;
+      const fails = Number((await kv(env).get(failKey)) || 0);
+      if (fails >= 10) return json({ error: "Zu viele Versuche, bitte in einer Stunde wieder" }, 429, nostore);
+      if (!stored || stored !== hash) {
+        await kv(env).put(failKey, String(fails + 1), { expirationTtl: 3600 });
+        return json({ error: "Code falsch" }, 403, nostore);
+      }
+      const last = await kv(env).get("alive:main", "json");
       if (request.method === "POST") {
-        if (last && Date.now() - Date.parse(last.at) < 5000) return json(last, 200, { "cache-control": "no-store" });
+        if (last && Date.now() - Date.parse(last.at) < 5000) return json(last, 200, nostore);
         const now = { at: new Date().toISOString() };
-        await kv(env).put(id, JSON.stringify(now));
-        return json(now, 200, { "cache-control": "no-store" });
+        await kv(env).put("alive:main", JSON.stringify(now));
+        return json(now, 200, nostore);
       }
-      return json(last || {}, 200, { "cache-control": "no-store" });
+      return json(last || {}, 200, nostore);
     }
     if (path === "/event") {
       if (!kv(env)) return json({}, 200, { "cache-control": "no-store" });
