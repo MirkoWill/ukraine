@@ -30,6 +30,7 @@
 }
 :root.big{font-size:19px}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);line-height:1.5;
   padding-top:env(safe-area-inset-top,0px);padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
@@ -157,6 +158,13 @@ footer.foot nav a{color:#fff;text-underline-offset:4px}
 .legal{display:flex;flex-direction:column;gap:8px}
 .legal h2{font-family:var(--f-head);font-weight:400;font-size:1.6rem;color:var(--olive);margin-top:10px}
 .legal a{color:var(--olive-dark)}
+.nbar{position:fixed;left:0;right:0;z-index:19;background:var(--hero);color:#fff;padding:10px max(14px,env(safe-area-inset-right,0px)) 10px max(14px,env(safe-area-inset-left,0px));box-shadow:0 -4px 14px rgba(0,0,0,.12)}
+.nbar .inner{display:flex;align-items:center;gap:10px}
+.nbar svg{width:24px;height:24px;flex:none;color:var(--hero-ink)}
+.nbar span{flex:1;min-width:0;font-weight:600;line-height:1.25}
+.nbar .btn.solid{background:var(--hero-ink);color:var(--hero);border-color:var(--hero-ink);padding:8px 14px;white-space:nowrap}
+.nbarX{background:none;border:0;color:#fff;font-size:1.6rem;line-height:1;padding:4px 6px;cursor:pointer;opacity:.8}
+body.has-nbar{padding-bottom:calc(150px + env(safe-area-inset-bottom,0px))}
 nav.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);
   padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px);z-index:20}
 nav.tabs .inner{display:grid;grid-template-columns:repeat(4,1fr)}
@@ -355,6 +363,14 @@ nav.tabs a[aria-current="page"]{color:var(--olive)}
 </div></footer>
 <div class="toast" id="toast" role="status" hidden></div>
 
+<div class="nbar" id="nbar" hidden>
+  <div class="inner">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10 21a2 2 0 0 0 4 0"/></svg>
+    <span id="nbarText"></span>
+    <button class="btn solid" type="button" id="nbarBtn"></button>
+    <button class="nbarX" type="button" id="nbarX" aria-label="Ausblenden">×</button>
+  </div>
+</div>
 <nav class="tabs" aria-label="Navigation"><div class="inner">
   <a href="#live" data-v="live"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10 21a2 2 0 0 0 4 0"/></svg><span data-i="tLive">Live</span></a>
   <a href="#zeiten" data-v="zeiten"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 20V12M10 20V6M15 20v-9M20 20V9"/></svg><span data-i="tZeit">Zeiten</span></a>
@@ -392,7 +408,7 @@ de:{
  notifDenied:"Benachrichtigungen sind im Browser blockiert. In den Website-Einstellungen des Browsers für diese Seite erlauben.",
  notifNo:"Dieser Browser unterstützt keine Benachrichtigungen.",
  notifIOS:"Auf dem iPhone: zuerst über „Teilen“ → „Zum Home-Bildschirm“ hinzufügen, die App von dort öffnen und hier einschalten.",
- notifQuiet:"Der Browser hat nicht nachgefragt. Auf das Symbol links neben der Adresse tippen → Berechtigungen → Benachrichtigungen erlauben. Unter Android auch prüfen: Einstellungen → Apps → Chrome → Benachrichtigungen an.",notifEnable:"Einschalten",notifBusy:"wird eingeschaltet …",notifTest:"Test senden",notifDisable:"Ausschalten",notifSent:"Test gesendet, kommt in wenigen Sekunden.",notifErr:"Hat nicht geklappt. Bitte später noch einmal versuchen.",
+ notifQuiet:"Der Browser hat nicht nachgefragt. Auf das Symbol links neben der Adresse tippen → Berechtigungen → Benachrichtigungen erlauben. Unter Android auch prüfen: Einstellungen → Apps → Chrome → Benachrichtigungen an.",nbarText:"Bei Alarm in Tschernihiw benachrichtigen",nbarHow:"So geht’s",notifEnable:"Einschalten",notifBusy:"wird eingeschaltet …",notifTest:"Test senden",notifDisable:"Ausschalten",notifSent:"Test gesendet, kommt in wenigen Sekunden.",notifErr:"Hat nicht geklappt. Bitte später noch einmal versuchen.",
  notifHint:"Ersetzt nicht die App „Повітряна тривога“, die direkt vom Staat warnt. Diese Benachrichtigung kann bis zu einer Minute später kommen.",
  failed:"Live-Status gerade nicht abrufbar. Bitte die App oder alerts.in.ua nutzen.",typeART:"Artilleriegefahr",
  zLead:"Wie oft war zu welcher Uhrzeit Luftalarm? Kyjiwer Zeit, eine Stunde später als in Berlin.",
@@ -465,7 +481,7 @@ uk:{
  notifDenied:"Сповіщення заблоковано в браузері. Дозвольте їх у налаштуваннях сайту для цієї сторінки.",
  notifNo:"Цей браузер не підтримує сповіщення.",
  notifIOS:"На iPhone: спершу «Поділитися» → «На початковий екран», відкрийте застосунок звідти й увімкніть тут.",
- notifQuiet:"Браузер не запитав дозволу. Торкніться значка ліворуч від адреси → Дозволи → дозвольте сповіщення. В Android також перевірте: Налаштування → Застосунки → Chrome → Сповіщення увімкнено.",notifEnable:"Увімкнути",notifBusy:"вмикаємо …",notifTest:"Надіслати тест",notifDisable:"Вимкнути",notifSent:"Тест надіслано, надійде за кілька секунд.",notifErr:"Не вдалося. Спробуйте пізніше.",
+ notifQuiet:"Браузер не запитав дозволу. Торкніться значка ліворуч від адреси → Дозволи → дозвольте сповіщення. В Android також перевірте: Налаштування → Застосунки → Chrome → Сповіщення увімкнено.",nbarText:"Сповіщати про тривогу в Чернігові",nbarHow:"Як увімкнути",notifEnable:"Увімкнути",notifBusy:"вмикаємо …",notifTest:"Надіслати тест",notifDisable:"Вимкнути",notifSent:"Тест надіслано, надійде за кілька секунд.",notifErr:"Не вдалося. Спробуйте пізніше.",
  notifHint:"Не замінює застосунок «Повітряна тривога», який попереджає безпосередньо від держави. Це сповіщення може надійти із запізненням до хвилини.",
  failed:"Статус зараз недоступний. Користуйтеся застосунком або alerts.in.ua.",typeART:"Загроза артобстрілу",
  zLead:"Як часто о певній годині була повітряна тривога? За київським часом, на годину пізніше, ніж у Берліні.",
@@ -563,7 +579,7 @@ async function enablePush(){
 }
 async function disablePush(){
   try{if(pushSub){await post("/unsubscribe",{endpoint:pushSub.endpoint}).catch(()=>{});await pushSub.unsubscribe()}}catch(e){}
-  pushSub=null;renderNotif();
+  pushSub=null;store.set("nbarOff","");renderNotif();
 }
 async function testPush(){try{await post("/test",{endpoint:pushSub.endpoint});toast(t("notifSent"))}catch(e){toast(t("notifErr"))}}
 function renderNotif(){
@@ -576,7 +592,21 @@ function renderNotif(){
   else{text=t("notifOff");btns=btn("nOn",t("notifEnable"),"btn solid")}
   $("notifText").textContent=text;$("notifBtns").innerHTML=btns;$("notifHint").textContent=hint;
   $("nOn")&&($("nOn").onclick=enablePush);$("nOff")&&($("nOff").onclick=disablePush);$("nTest")&&($("nTest").onclick=testPush);
+  renderBar();
 }
+// Leiste unten über der Navigation, solange Benachrichtigungen aus sind
+function renderBar(){
+  const bar=$("nbar"),dismissed=store.get("nbarOff")==="1";
+  let show=!pushSub&&!dismissed&&(pushOK||isIOS),label=t("notifEnable"),act=enablePush;
+  if(pushOK&&Notification.permission==="denied"){label=t("nbarHow");act=()=>toast(t("notifQuiet"))}
+  if(!pushOK&&isIOS){label=t("nbarHow");act=()=>toast(t("notifIOS"))}
+  bar.hidden=!show;document.body.classList.toggle("has-nbar",show);
+  if(!show)return;
+  bar.style.bottom=document.querySelector("nav.tabs").offsetHeight+"px";
+  $("nbarText").textContent=t("nbarText");$("nbarBtn").textContent=label;$("nbarBtn").onclick=act;
+  $("nbarX").onclick=()=>{store.set("nbarOff","1");renderBar()};
+}
+window.addEventListener("resize",()=>{if(!$("nbar").hidden)renderBar()});
 // Ohne Push-Abo: solange die Seite offen ist, bei Statuswechsel lokal melden
 function notifyLocal(s){
   const prev=lastCity;lastCity=s;
