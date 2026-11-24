@@ -163,6 +163,15 @@ html.locked body{padding-bottom:0}
 .gate .mark{padding:0;font-size:1.8rem}
 .gate input{font:inherit;font-size:1.6rem;letter-spacing:.35em;text-align:center;border:1.5px solid var(--olive);border-radius:14px;padding:12px;background:var(--surface);color:var(--ink);width:100%}
 .gate .err{color:var(--bad);font-weight:600;min-height:1.5em}
+.alivehint{background:var(--warn-soft);color:#6b4a00;border-radius:12px;padding:10px 12px;font-weight:600}
+.alivebtn.pulse{box-shadow:0 0 0 4px var(--warn-soft),0 0 0 6px var(--warn)}
+@media (prefers-reduced-motion:no-preference){.alivebtn.pulse{animation:pulse 1.6s ease-in-out infinite}}
+@keyframes pulse{50%{box-shadow:0 0 0 8px var(--warn-soft),0 0 0 10px var(--warn)}}
+.tl{display:flex;flex-direction:column;border-top:1px solid var(--line);margin-top:4px}
+.tl h4{margin:10px 0 4px;font-size:.9rem;color:var(--muted);font-weight:600}
+.tl .row{padding:7px 0}
+.tl .dot{width:14px;height:14px}
+.tl .right{font-weight:600;color:var(--muted)}
 .flag{display:inline-block;font-size:.78rem;font-weight:700;color:var(--bad);margin-left:6px}
 
 ul.rules{margin:0;padding-left:1.15em;display:flex;flex-direction:column;gap:9px}
@@ -241,6 +250,7 @@ nav.tabs a[aria-current="page"]{color:var(--olive)}
     <div class="dayrow"><span class="muted small" data-i="dayLabel">Tschernihiw, letzte 24 Stunden</span><span class="daychip" id="dayChip"></span></div>
     <span id="dayText"></span>
     <span class="small muted" id="dayNote"></span>
+    <div id="dayList" class="tl"></div>
   </div>
   <div class="card">
     <h3 data-i="routeNow">Strecke jetzt</h3>
@@ -436,7 +446,7 @@ de:{
  famOk:"Mir geht’s gut",famOkSent:"Gesendet. Die Familie wird benachrichtigt.",famWait:"Gerade erst gesendet. Bitte kurz warten.",famLeave:"Verbindung lösen",
  famCopy:"Kopieren",famCopied:"Kopiert",famBadCode:"Der Code passt nicht. Er sieht so aus: ABCDE-FGHJK",famNameMissing:"Bitte zuerst deinen Namen eintragen.",
  offline:"offline, letzter bekannter Stand",
- aliveT:"Mir geht’s gut",pinText:"Bitte einmal den Zugangscode eingeben. Danach merkt sich dieses Handy den Code.",pinLabel:"Zugangscode",pinBtn:"Freischalten",pinOk:"Freigeschaltet.",pinWrong:"Der Code stimmt nicht.",pinLocked:"Zu viele Versuche. Bitte in einer Stunde noch einmal.",aliveSetup:"Einrichten",aliveSetupText:"Einmal einrichten: auf „Einrichten“ tippen, dann unter „Mit dem anderen Handy verbinden“ den Link per Signal schicken und auf dem anderen Handy einmal öffnen.",
+ aliveT:"Mir geht’s gut",aliveAfter:"Entwarnung um {h}. Noch nicht bestätigt – bitte kurz tippen.",tlT:"Verlauf, letzte 24 Stunden (Kyjiwer Zeit)",tlAlarm:"Luftalarm in Tschernihiw",tlOk:"Mir geht’s gut",tlNow:"jetzt",pinText:"Bitte einmal den Zugangscode eingeben. Danach merkt sich dieses Handy den Code.",pinLabel:"Zugangscode",pinBtn:"Freischalten",pinOk:"Freigeschaltet.",pinWrong:"Der Code stimmt nicht.",pinLocked:"Zu viele Versuche. Bitte in einer Stunde noch einmal.",aliveSetup:"Einrichten",aliveSetupText:"Einmal einrichten: auf „Einrichten“ tippen, dann unter „Mit dem anderen Handy verbinden“ den Link per Signal schicken und auf dem anderen Handy einmal öffnen.",
  aliveBtn:"Mir geht’s gut",aliveDone:"Bestätigt um {h}",aliveAgo:"Zuletzt bestätigt vor:",aliveNever:"noch nie",minShort:"Min.",hShort:"Std.",
  aliveShare:"Mit dem anderen Handy verbinden",aliveShareText:"Diesen Link einmal per Signal schicken und auf dem anderen Handy öffnen. Danach sehen beide denselben Stand. Den Link nicht öffentlich teilen.",
  aliveCopy:"Link teilen",aliveLinked:"Verbunden. „Mir geht’s gut“ ist jetzt mit dem anderen Handy gekoppelt.",aliveErr:"Hat nicht geklappt, bitte noch einmal tippen.",aliveOffline:"Gerade keine Verbindung, der Stand kann veraltet sein.",nbarHow:"So geht’s",notifEnable:"Einschalten",notifBusy:"wird eingeschaltet …",notifTest:"Test senden",notifDisable:"Ausschalten",notifSent:"Test gesendet, kommt in wenigen Sekunden.",notifErr:"Hat nicht geklappt. Bitte später noch einmal versuchen.",
@@ -521,7 +531,7 @@ uk:{
  famOk:"Зі мною все гаразд",famOkSent:"Надіслано. Родина отримає сповіщення.",famWait:"Щойно надіслано. Зачекайте трохи.",famLeave:"Від'єднатися",
  famCopy:"Копіювати",famCopied:"Скопійовано",famBadCode:"Код неправильний. Він має такий вигляд: ABCDE-FGHJK",famNameMissing:"Спершу введіть своє ім'я.",
  offline:"офлайн, останній відомий стан",
- aliveT:"Зі мною все гаразд",pinText:"Будь ласка, один раз введіть код доступу. Після цього телефон його запам'ятає.",pinLabel:"Код доступу",pinBtn:"Розблокувати",pinOk:"Розблоковано.",pinWrong:"Код неправильний.",pinLocked:"Забагато спроб. Спробуйте через годину.",aliveSetup:"Налаштувати",aliveSetupText:"Налаштуйте один раз: натисніть «Налаштувати», потім у розділі «Поєднати з іншим телефоном» надішліть посилання через Signal і один раз відкрийте його на іншому телефоні.",
+ aliveT:"Зі мною все гаразд",aliveAfter:"Відбій тривоги о {h}. Ще не підтверджено — будь ласка, натисніть.",tlT:"Історія за останні 24 години (за Києвом)",tlAlarm:"Повітряна тривога в Чернігові",tlOk:"Зі мною все гаразд",tlNow:"зараз",pinText:"Будь ласка, один раз введіть код доступу. Після цього телефон його запам'ятає.",pinLabel:"Код доступу",pinBtn:"Розблокувати",pinOk:"Розблоковано.",pinWrong:"Код неправильний.",pinLocked:"Забагато спроб. Спробуйте через годину.",aliveSetup:"Налаштувати",aliveSetupText:"Налаштуйте один раз: натисніть «Налаштувати», потім у розділі «Поєднати з іншим телефоном» надішліть посилання через Signal і один раз відкрийте його на іншому телефоні.",
  aliveBtn:"Зі мною все гаразд",aliveDone:"Підтверджено о {h}",aliveAgo:"Від останнього підтвердження минуло:",aliveNever:"ще жодного разу",minShort:"хв",hShort:"год",
  aliveShare:"Поєднати з іншим телефоном",aliveShareText:"Надішліть це посилання один раз через Signal і відкрийте на іншому телефоні. Після цього обидва бачитимуть той самий стан. Не поширюйте посилання публічно.",
  aliveCopy:"Поділитися посиланням",aliveLinked:"Поєднано. «Зі мною все гаразд» тепер пов'язано з іншим телефоном.",aliveErr:"Не вдалося, натисніть ще раз.",aliveOffline:"Зараз немає з'єднання, дані можуть бути застарілими.",nbarHow:"Як увімкнути",notifEnable:"Увімкнути",notifBusy:"вмикаємо …",notifTest:"Надіслати тест",notifDisable:"Вимкнути",notifSent:"Тест надіслано, надійде за кілька секунд.",notifErr:"Не вдалося. Спробуйте пізніше.",
@@ -687,12 +697,31 @@ function renderAlive(){
   const min=at?Math.max(0,Math.floor((Date.now()-at)/60000)):null;
   const fresh=min!==null&&min<15;
   const cls=min===null?"bad":min<45?"ok":min<120?"warn":"bad";
+  // nach einer Entwarnung (letzte 3 Std.) noch nicht bestätigt? -> hervorheben
+  const ends=((LIVE&&LIVE.alarms24)||[]).map(s=>s[1]).filter(Boolean).map(Date.parse);
+  const lastEnd=ends.length?Math.max(...ends):null;
+  const cityClear=LIVE&&LIVE.areas&&LIVE.areas.chernihiv_city&&LIVE.areas.chernihiv_city.status!=="alert";
+  const needAfter=cityClear&&lastEnd&&Date.now()-lastEnd<3*3600e3&&(!at||at<lastEnd);
   box.innerHTML=`<div class="fam">
-    <button class="alivebtn${fresh?" done":""}" type="button" id="aliveBtn">${fresh?"✓ "+fmt(t("aliveDone"),{h:localTime(ALIVE.at)}):"✓ "+t("aliveBtn")}</button>
+    ${needAfter?`<div class="alivehint" role="status">${fmt(t("aliveAfter"),{h:localTime(new Date(lastEnd).toISOString())})}</div>`:""}
+    <button class="alivebtn${fresh?" done":""}${needAfter?" pulse":""}" type="button" id="aliveBtn">${fresh?"✓ "+fmt(t("aliveDone"),{h:localTime(ALIVE.at)}):"✓ "+t("aliveBtn")}</button>
     <div class="aliveago ${cls}"><span>${t("aliveAgo")}</span><b>${min===null?t("aliveNever"):fmtAgo(min)}</b></div>
     ${aliveErr?`<p class="small muted">${t("aliveOffline")}</p>`:""}
   </div>`;
   $("aliveBtn").onclick=pressAlive;
+  renderTimeline();
+}
+// Verlauf der letzten 24 Stunden: Alarme und Bestätigungen, neueste zuerst
+function renderTimeline(){
+  const box=$("dayList");if(!box)return;
+  const items=[];
+  for(const [a,b] of (LIVE&&LIVE.alarms24)||[]){
+    const dur=Math.round(((b?Date.parse(b):Date.now())-Date.parse(a))/60000);
+    items.push({ts:Date.parse(a),html:`<div class="row"><span class="dot bad"></span><div class="grow"><div class="name">${localTime(a)}–${b?localTime(b):t("tlNow")}</div><div class="sub">${t("tlAlarm")}</div></div><div class="right">${fmtAgo(dur)}</div></div>`});
+  }
+  for(const x of (ALIVE&&ALIVE.list)||[])items.push({ts:Date.parse(x),html:`<div class="row"><span class="dot ok"></span><div class="grow"><div class="name">${localTime(x)}</div><div class="sub">✓ ${t("tlOk")}</div></div></div>`});
+  items.sort((x,y)=>y.ts-x.ts);
+  box.innerHTML=items.length?`<h4>${t("tlT")}</h4>`+items.map(i=>i.html).join(""):"";
 }
 setInterval(()=>{if(alivePin())renderAlive()},30000);
 // Ohne Push-Abo: solange die Seite offen ist, bei Statuswechsel lokal melden
@@ -814,6 +843,7 @@ function renderLive(){
   $("nowState").textContent=stTxt(s);
   renderQuote(s==="clear");
   renderDay(LIVE.last24h);
+  if(alivePin())renderAlive();else renderTimeline();
   $("nowSub").textContent=(s==="alert"&&c.scope?t("scope")[c.scope]+" ":"")+(c&&c.since&&s==="alert"?`${t("since")} ${localTime(c.since)}`+(c.types&&c.types.includes("ARTILLERY")?` · ${t("typeART")}`:""):"");
   notifyLocal(s);
   $("liveList").innerHTML=LIVE_ORDER.map(k=>{const a=LIVE.areas[k],s=stOf(a);

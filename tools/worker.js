@@ -182,6 +182,15 @@ async function record(env, area) {
   return transition;
 }
 
+// Alarme der Stadt in den letzten 24 Stunden: [[Beginn, Ende oder null], ...]
+function alarms24(h) {
+  if (!h) return null;
+  const from = Date.now() - DAY;
+  const iso = (x) => new Date(x).toISOString();
+  return h.done.filter(([, b]) => b > from).map(([a, b]) => [iso(a), iso(b)])
+    .concat(h.open !== null ? [[iso(h.open), null]] : []);
+}
+
 function last24(h) {
   if (!h) return null;
   const now = Date.now(), from = now - DAY;
@@ -283,13 +292,18 @@ export default {
         await kv(env).put(failKey, String(fails + 1), { expirationTtl: 3600 });
         return json({ error: "Code falsch" }, 403, nostore);
       }
+      // { at: letzte Bestätigung, list: alle Bestätigungen der letzten 24 Stunden }
       const last = await kv(env).get("alive:main", "json");
       if (request.method === "POST") {
         if (last && Date.now() - Date.parse(last.at) < 5000) return json(last, 200, nostore);
-        const now = { at: new Date().toISOString() };
+        const at = new Date().toISOString();
+        const list = ((last && last.list) || (last && last.at ? [last.at] : []))
+          .filter((x) => Date.now() - Date.parse(x) < DAY).concat(at);
+        const now = { at, list };
         await kv(env).put("alive:main", JSON.stringify(now));
         return json(now, 200, nostore);
       }
+      if (last && last.list) last.list = last.list.filter((x) => Date.now() - Date.parse(x) < DAY);
       return json(last || {}, 200, nostore);
     }
     if (path === "/event") {
@@ -348,10 +362,10 @@ export default {
     } catch (e) {
       return json({ error: "Quellen nicht erreichbar" }, 502);
     }
-    let hist = null;
-    try { hist = last24(await readHist(env)); } catch (e) {}
+    let hist = null, spans = null;
+    try { const h = await readHist(env); hist = last24(h); spans = alarms24(h); } catch (e) {}
     const updated = new Date().toISOString().replace(/\.\d+Z$/, "Z");
-    return json({ updated, source, areas, last24h: hist });
+    return json({ updated, source, areas, last24h: hist, alarms24: spans });
   },
 
   async scheduled(event, env, ctx) {
