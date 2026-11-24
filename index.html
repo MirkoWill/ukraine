@@ -351,10 +351,6 @@ nav.tabs a[aria-current="page"]{color:var(--olive)}
     <h3 data-i="alarmT">Bei Alarm</h3>
     <ul class="rules" data-list="alarm"></ul>
   </div>
-  <div class="card">
-    <h3 data-i="wordsT">Wichtige Wörter</h3>
-    <div class="list" id="words"></div>
-  </div>
 </div>
 
 <!-- IMPRESSUM -->
@@ -726,7 +722,6 @@ function applyText(){
   document.querySelectorAll("[data-list]").forEach(ul=>{ul.innerHTML=t(ul.dataset.list).map(x=>`<li>${x}</li>`).join("")});
   $("langLbl").textContent=lang==="uk"?"UA":"DE";$("heroRefresh").setAttribute("aria-label",t("refresh"));$("heroRefresh").title=t("refresh");
   $("emList").innerHTML=t("em").map(([n,d])=>`<div class="row"><a class="em" href="tel:${n}">${n}</a><div class="grow"><div class="name">${d}</div></div></div>`).join("");
-  $("words").innerHTML=t("words").map(([u,d])=>`<div class="row"><div class="grow"><div class="name">${u}</div><div class="sub">${lang==="uk"?d+" (нім.)":d}</div></div></div>`).join("");
   $("heroTitle").textContent=t(HERO[view]);
 }
 
