@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#f6f6f3">
+<meta name="robots" content="noindex, nofollow">
+<script>try{if(!localStorage.getItem("alivePin"))document.documentElement.classList.add("locked")}catch(e){document.documentElement.classList.add("locked")}</script>
 <title>Безпечно в Чернігові</title>
 
 
@@ -153,6 +155,14 @@ table.heat td{width:24px;min-width:24px;height:24px;border-radius:4px;text-align
 .aliveago{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;font-size:1.05rem}
 .aliveago b{font-size:1.35rem;font-variant-numeric:tabular-nums}
 .aliveago.ok b{color:var(--ok)} .aliveago.warn b{color:#8a5f00} .aliveago.bad b{color:var(--bad)}
+.gate{display:none}
+html.locked body > *:not(.gate):not(script){display:none!important}
+html.locked .gate{display:flex;min-height:100vh;min-height:100dvh;align-items:center;justify-content:center;padding:24px max(18px,env(safe-area-inset-left,0px))}
+html.locked body{padding-bottom:0}
+.gate .box{max-width:360px;width:100%;display:flex;flex-direction:column;gap:14px;text-align:center}
+.gate .mark{padding:0;font-size:1.8rem}
+.gate input{font:inherit;font-size:1.6rem;letter-spacing:.35em;text-align:center;border:1.5px solid var(--olive);border-radius:14px;padding:12px;background:var(--surface);color:var(--ink);width:100%}
+.gate .err{color:var(--bad);font-weight:600;min-height:1.5em}
 .flag{display:inline-block;font-size:.78rem;font-weight:700;color:var(--bad);margin-left:6px}
 
 ul.rules{margin:0;padding-left:1.15em;display:flex;flex-direction:column;gap:9px}
@@ -181,6 +191,15 @@ nav.tabs a[aria-current="page"]{color:var(--olive)}
 </style>
 </head>
 <body>
+<div class="gate" id="gate">
+  <form class="box" id="gateForm" autocomplete="off">
+    <div class="mark"><span>Безпечно в</span> <b>Чернігові</b></div>
+    <label for="gateIn" class="muted">Код доступу / Zugangscode</label>
+    <input type="password" id="gateIn" inputmode="numeric" maxlength="32" autofocus>
+    <button class="btn solid big" type="submit" id="gateBtn">Відкрити / Öffnen</button>
+    <p class="err" id="gateErr" role="alert"></p>
+  </form>
+</div>
 
 <header class="gut"><div class="inner mark"><span data-i="mark1">Reise nach</span> <b data-i="mark2">Tschernihiw</b></div></header>
 
@@ -638,7 +657,7 @@ async function aliveFetch(method){
   const r=method==="POST"
     ?await fetch(WORKER+"/alive",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({p:pin})})
     :await fetch(WORKER+"/alive?p="+encodeURIComponent(pin)+"&t="+Date.now(),{cache:"no-store"});
-  if(r.status===403){store.set("alivePin","");ALIVE=null;toast(t("pinWrong"));renderAlive();throw "pin"}
+  if(r.status===403){store.set("alivePin","");ALIVE=null;document.documentElement.classList.add("locked");renderAlive();throw "pin"}
   if(r.status===429){toast(t("pinLocked"));throw "locked"}
   if(!r.ok)throw r.status;
   return r.json();
@@ -900,6 +919,18 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){loadLive(
 setInterval(()=>{loadLive();loadAlive()},60000);
 
 window.addEventListener("online",loadLive);window.addEventListener("offline",()=>{if(LIVE)renderLive()});
+/* ---------- Zugangscode für die ganze Seite (geprüft im Worker, einmal pro Handy) ---------- */
+$("gateForm").onsubmit=async e=>{
+  e.preventDefault();const v=$("gateIn").value.trim();if(!v)return;
+  $("gateBtn").disabled=true;$("gateErr").textContent="";
+  try{
+    const r=await fetch(WORKER+"/alive?p="+encodeURIComponent(v)+"&t="+Date.now(),{cache:"no-store"});
+    if(r.ok){store.set("alivePin",v);ALIVE=await r.json();document.documentElement.classList.remove("locked");renderAlive();loadLive();window.scrollTo(0,0)}
+    else if(r.status===429)$("gateErr").textContent="Забагато спроб, спробуйте через годину / Zu viele Versuche, bitte in einer Stunde";
+    else $("gateErr").textContent="Код неправильний / Code falsch";
+  }catch(err){$("gateErr").textContent="Немає з'єднання / Keine Verbindung"}
+  $("gateBtn").disabled=false;
+};
 applyText();route();loadLive();loadAlive();renderKm();initPush();saveLang();
 fetch("data/stats.json").then(r=>r.json()).then(d=>{STATS=d;renderStats()}).catch(()=>{$("srcNote").textContent="data/stats.json?"});
 </script>
