@@ -1,7 +1,7 @@
 // Cloudflare Worker für „Sicher in Tschernihiw“.
 //
 // GET  /            aktueller Luftalarm-Status (Stadt Tschernihiw, Bezirk, Oblast, Kyjiw, Strecke)
-//                   plus 24-Stunden-Lage der Stadt
+//                   plus 24-Stunden-Lage der Stadt und landesweite Lage (wie viele Oblaste im Alarm)
 // GET  /vapid       öffentlicher Schlüssel für Push-Benachrichtigungen
 // POST /subscribe   Push-Abo speichern            { subscription, lang }
 // POST /unsubscribe Push-Abo löschen              { endpoint }
@@ -97,12 +97,28 @@ function indexChildren(nodes, map = {}) {
   return map;
 }
 
+// Landesweite Lage: Wie viele der 24 Oblaste (inkl. Stadt Kyjiw) haben gerade Alarm, ganz oder in
+// einzelnen Bezirken? Nicht gezählt: besetzte Krim und Luhansk, die doppelt geführten Städte
+// Saporischschja und Charkiw, die Testregion und Dauer-Alarme an der Front (älter als 2 Tage).
+// Schwellen aus den offiziellen Daten der letzten 90 Tage: üblich sind ~7 Oblaste;
+// >= 14 kommt in 2–3 % der Zeit vor, >= 18 nur in 0,5 % (passt zu Großangriffen).
+const NATION_SKIP = new Set(["9999", "16", "564", "1293", "0"]);
+const NATION_HIGH = 14, NATION_MAJOR = 18;
+function nationLevel(active, total) {
+  return { active, total, level: active >= NATION_MAJOR ? "major" : active >= NATION_HIGH ? "high" : "normal" };
+}
+
 async function fromSiren() {
   const [regions, alerts] = await Promise.all([
     getJSON("https://siren.pp.ua/api/v3/regions", 86400),
     getJSON("https://siren.pp.ua/api/v3/alerts", 15),
   ]);
   const children = indexChildren(regions.states);
+  const stateOf = {};
+  for (const s of regions.states) {
+    stateOf[String(s.regionId)] = String(s.regionId);
+    for (const d of children[String(s.regionId)] || []) stateOf[d] = String(s.regionId);
+  }
 
   const active = {};
   for (const e of alerts) {
@@ -119,6 +135,13 @@ async function fromSiren() {
     }
     active[String(e.regionId)] = { types, since };
   }
+  const states = regions.states.map((s) => String(s.regionId)).filter((id) => !NATION_SKIP.has(id));
+  const alerted = new Set();
+  for (const [id, a] of Object.entries(active)) {
+    if (a.since && Date.now() - Date.parse(a.since) > 2 * DAY) continue; // Dauer-Alarm
+    const st = stateOf[id];
+    if (st && !NATION_SKIP.has(st)) alerted.add(st);
+  }
 
   const out = {};
   for (const [key, [ids, parent]] of Object.entries(AREAS)) {
@@ -134,6 +157,7 @@ async function fromSiren() {
   }
   // Für welches Gebiet gilt der Alarm in der Stadt? (größtes zuerst)
   out.chernihiv_city.scope = active[OBLAST] ? "oblast" : active[RAION] ? "raion" : active[CITY] ? "city" : null;
+  out._nation = nationLevel(alerted.size, states.length);
   return [out, "siren.pp.ua"];
 }
 
@@ -145,6 +169,9 @@ async function fromUbilling() {
     out[key] = { status: on ? "alert" : "clear", since: null, types: on ? ["AIR"] : [] };
   }
   out.chernihiv_city.scope = out.chernihiv_city.status === "alert" ? "oblast" : null;
+  const skip = /Крим|Луган|Севастоп/;
+  const names = Object.keys(states).filter((n) => !skip.test(n) && /област|м\. Київ/.test(n));
+  out._nation = nationLevel(names.filter((n) => states[n].alertnow).length, names.length);
   return [out, "ubilling.net.ua"];
 }
 
@@ -289,6 +316,7 @@ const TG_TEXT = {
     level: { quiet: "спокійно", normal: "звично", busy: "неспокійно" },
     lastOk: (a) => `Останнє «все гаразд»: ${a} тому.`, never: "«Все гаразд» ще не підтверджували за добу.",
     min: "хв", h: "год", app: "Застосунок",
+    nation: (n, t, l) => (l === "major" ? "⚠️ Можлива масована атака: " : "") + `Тривога в ${n} з ${t} областей.`,
   },
   ru: {
     ok: "✓ Со мной всё в порядке", status: "Статус",
@@ -301,6 +329,7 @@ const TG_TEXT = {
     level: { quiet: "спокойно", normal: "обычно", busy: "неспокойно" },
     lastOk: (a) => `Последнее «всё в порядке»: ${a} назад.`, never: "«Всё в порядке» за сутки ещё не подтверждали.",
     min: "мин", h: "ч", app: "Приложение",
+    nation: (n, t, l) => (l === "major" ? "⚠️ Возможна массированная атака: " : "") + `Тревога в ${n} из ${t} областей.`,
   },
   de: {
     ok: "✓ Mir geht’s gut", status: "Status",
@@ -313,6 +342,7 @@ const TG_TEXT = {
     level: { quiet: "ruhig", normal: "normal", busy: "unruhig" },
     lastOk: (a) => `Letztes „Mir geht’s gut“: vor ${a}.`, never: "Heute wurde noch nicht bestätigt.",
     min: "Min.", h: "Std.", app: "App",
+    nation: (n, t, l) => (l === "major" ? "⚠️ Möglicher Großangriff: " : "") + `Alarm in ${n} von ${t} Oblasten.`,
   },
 };
 const tgLang = (code) => (/^ru/.test(code || "") ? "ru" : /^de/.test(code || "") ? "de" : "uk");
@@ -334,13 +364,15 @@ function ago(T, ms) {
   return `${Math.floor(m / 60)} ${T.h}` + (m % 60 ? ` ${m % 60} ${T.min}` : "");
 }
 async function tgStatus(env, T) {
-  let lines = [];
+  let lines = [], nationNow = null;
   try {
     const [areas] = await getAreas();
+    nationNow = areas._nation || null;
     const c = areas.chernihiv_city;
     if (c.status === "alert") lines.push(`${T.alert}${c.scope ? " (" + T.scope[c.scope] + ")" : ""}${c.since ? ", " + T.since + " " + kyivTime(c.since) : ""}`);
     else lines.push(T.clear);
   } catch (e) { lines.push(T.unknown); }
+  if (nationNow) lines.push(T.nation(nationNow.active, nationNow.total, nationNow.level));
   const d = last24(await readHist(env));
   if (d && d.complete) lines.push(T.day(d.hours, d.count, T.level[d.level]));
   const a = await kv(env).get("alive:main", "json");
@@ -492,8 +524,10 @@ export default {
     }
     let hist = null, spans = null;
     try { const h = await readHist(env); hist = last24(h); spans = alarms24(h); } catch (e) {}
+    const nation = areas._nation || null;
+    delete areas._nation;
     const updated = new Date().toISOString().replace(/\.\d+Z$/, "Z");
-    return json({ updated, source, areas, last24h: hist, alarms24: spans });
+    return json({ updated, source, areas, nation, last24h: hist, alarms24: spans });
   },
 
   async scheduled(event, env, ctx) {
