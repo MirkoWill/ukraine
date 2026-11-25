@@ -153,6 +153,8 @@ table.heat td{width:24px;min-width:24px;height:24px;border-radius:4px;text-align
 .alive{gap:10px}
 .alivebtn{width:100%;font:inherit;font-size:1.25rem;font-weight:700;padding:18px;border-radius:16px;border:2px solid var(--olive);background:var(--olive);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px}
 .alivebtn.done{background:var(--ok);border-color:var(--ok)}
+.alivebtn.late{background:#c8901a;border-color:#c8901a}
+.alivebtn.overdue{background:var(--bad);border-color:var(--bad)}
 .alivebtn:disabled{opacity:.7}
 .aliveago{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;font-size:1.05rem}
 .aliveago b{font-size:1.35rem;font-variant-numeric:tabular-nums}
@@ -723,7 +725,7 @@ function renderAlive(){
   const needAfter=cityClear&&lastEnd&&Date.now()-lastEnd<3*3600e3&&(!at||at<lastEnd);
   box.innerHTML=`<div class="fam">
     ${needAfter?`<div class="alivehint" role="status">${fmt(t("aliveAfter"),{h:localTime(new Date(lastEnd).toISOString())})}</div>`:""}
-    <button class="alivebtn${fresh?" done":""}${needAfter?" pulse":""}" type="button" id="aliveBtn">${fresh?"✓ "+fmt(t("aliveDone"),{h:localTime(ALIVE.at)}):"✓ "+t("aliveBtn")}</button>
+    <button class="alivebtn${fresh?" done":min===null||min>=120?" overdue":min>=45?" late":""}${needAfter?" pulse":""}" type="button" id="aliveBtn">${fresh?"✓ "+fmt(t("aliveDone"),{h:localTime(ALIVE.at)}):"✓ "+t("aliveBtn")}</button>
     <div class="aliveago ${cls}"><span>${t("aliveAgo")}</span><b>${min===null?t("aliveNever"):fmtAgo(min)}</b></div>
     ${aliveErr?`<p class="small muted">${t("aliveOffline")}</p>`:""}
   </div>`;
