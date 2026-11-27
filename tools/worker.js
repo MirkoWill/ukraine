@@ -34,6 +34,9 @@
 // unteres Viertel = ruhig, oberes Viertel = unruhig.
 const QUIET_BELOW = 4.7;
 const BUSY_ABOVE = 10.7;
+// Vergleich mit der jüngsten Erfahrung: Schnitt der letzten (bis zu) 7 vollständigen Tage davor.
+// Abweichung von mindestens 25 % und mindestens 1,5 Std. gilt als "ruhiger" bzw. "unruhiger als zuletzt".
+const KEEP_DAYS = 14, BASE_DAYS = 7, BASE_MIN_DAYS = 3;
 const DAY = 24 * 3600 * 1000;
 const SITE = "https://mirkowill.github.io/ukraine/";
 
@@ -207,8 +210,12 @@ async function record(env, area) {
     h.open = null;
     changed = true; transition = "clear";
   }
-  const keep = h.done.filter(([, b]) => b > now - 2 * DAY);
+  // Verlauf 14 Tage aufbewahren. "cover": ab wann der Verlauf lückenlos ist (frühere Fassungen
+  // hielten nur 2 Tage vor; beim ersten Lauf dieser Fassung sind also die letzten 2 Tage vollständig).
+  if (!h.cover) { h.cover = Math.max(h.start, now - 2 * DAY); changed = true; }
+  const keep = h.done.filter(([, b]) => b > now - KEEP_DAYS * DAY);
   if (keep.length !== h.done.length) { h.done = keep; changed = true; }
+  if (h.cover < now - KEEP_DAYS * DAY) { h.cover = now - KEEP_DAYS * DAY; changed = true; }
   if (changed || !(await kv(env).get("chernihiv_city"))) await kv(env).put("chernihiv_city", JSON.stringify(h));
   return transition;
 }
@@ -222,18 +229,36 @@ function alarms24(h) {
     .concat(h.open !== null ? [[iso(h.open), null]] : []);
 }
 
+function alarmHours(spans, from, to) {
+  let ms = 0, count = 0;
+  for (const [a, b] of spans) {
+    const s = Math.max(a, from), e = Math.min(b, to);
+    if (e > s) { ms += e - s; count++; }
+  }
+  return [ms / 3600000, count];
+}
 function last24(h) {
   if (!h) return null;
   const now = Date.now(), from = now - DAY;
   const spans = h.done.concat(h.open !== null ? [[h.open, now]] : []);
-  let ms = 0, count = 0;
-  for (const [a, b] of spans) {
-    const s = Math.max(a, from), e = Math.min(b, now);
-    if (e > s) { ms += e - s; count++; }
-  }
-  const hours = Math.round((ms / 3600000) * 10) / 10;
+  const [hrs, count] = alarmHours(spans, from, now);
+  const hours = Math.round(hrs * 10) / 10;
   const level = hours < QUIET_BELOW ? "quiet" : hours > BUSY_ABOVE ? "busy" : "normal";
-  return { hours, count, level, complete: h.start <= from, since: new Date(h.start).toISOString() };
+  // Vergleichstage: volle 24-Std.-Fenster vor den letzten 24 Std., nur soweit der Verlauf lückenlos ist
+  const cover = h.cover || Math.max(h.start, now - 2 * DAY);
+  const days = [];
+  for (let k = 1; k <= BASE_DAYS; k++) {
+    const a = now - (k + 1) * DAY, b = now - k * DAY;
+    if (a < cover) break;
+    days.push(alarmHours(spans, a, b)[0]);
+  }
+  let base = null, rel = "collect";
+  if (days.length >= BASE_MIN_DAYS) {
+    base = Math.round((days.reduce((x, y) => x + y, 0) / days.length) * 10) / 10;
+    const diff = hours - base, enough = Math.abs(diff) >= Math.max(1.5, base * 0.25);
+    rel = !enough ? "same" : diff < 0 ? "lower" : "higher";
+  }
+  return { hours, count, level, rel, base, baseDays: days.length, complete: h.start <= from, since: new Date(h.start).toISOString() };
 }
 
 // ---------- Web Push (ohne Inhalt, nur VAPID-Signatur) ----------
@@ -312,7 +337,9 @@ const TG_TEXT = {
     confirmed: (t) => `✓ Підтверджено о ${t} (за Києвом).`,
     alert: "🔴 Повітряна тривога в Чернігові", clear: "🟢 У Чернігові тривоги немає", unknown: "Статус невідомий",
     scope: { city: "для міста", raion: "для всього Чернігівського району", oblast: "для всієї області" },
-    since: "з", day: (h, c, l) => `За 24 год: ${h} год під тривогою, тривог: ${c} (${l}).`,
+    since: "з", day: (h, c, l) => `За 24 год: ${h} год під тривогою, тривог: ${c}` + (l ? ` (${l}).` : "."),
+    rel: { lower: "спокійніше, ніж останнім часом", same: "як останнім часом", higher: "неспокійніше, ніж останнім часом" },
+    base: (b, n) => `Середнє за ${n} дн.: ${b} год.`,
     level: { quiet: "спокійно", normal: "звично", busy: "неспокійно" },
     lastOk: (a) => `Останнє «все гаразд»: ${a} тому.`, never: "«Все гаразд» ще не підтверджували за добу.",
     min: "хв", h: "год", app: "Застосунок",
@@ -325,7 +352,9 @@ const TG_TEXT = {
     confirmed: (t) => `✓ Подтверждено в ${t} (по Киеву).`,
     alert: "🔴 Воздушная тревога в Чернигове", clear: "🟢 В Чернигове тревоги нет", unknown: "Статус неизвестен",
     scope: { city: "для города", raion: "для всего Черниговского района", oblast: "для всей области" },
-    since: "с", day: (h, c, l) => `За 24 ч: ${h} ч под тревогой, тревог: ${c} (${l}).`,
+    since: "с", day: (h, c, l) => `За 24 ч: ${h} ч под тревогой, тревог: ${c}` + (l ? ` (${l}).` : "."),
+    rel: { lower: "спокойнее, чем в последнее время", same: "как в последнее время", higher: "неспокойнее, чем в последнее время" },
+    base: (b, n) => `Среднее за ${n} дн.: ${b} ч.`,
     level: { quiet: "спокойно", normal: "обычно", busy: "неспокойно" },
     lastOk: (a) => `Последнее «всё в порядке»: ${a} назад.`, never: "«Всё в порядке» за сутки ещё не подтверждали.",
     min: "мин", h: "ч", app: "Приложение",
@@ -338,7 +367,9 @@ const TG_TEXT = {
     confirmed: (t) => `✓ Bestätigt um ${t} Uhr (Kyjiwer Zeit).`,
     alert: "🔴 Luftalarm in Tschernihiw", clear: "🟢 Kein Alarm in Tschernihiw", unknown: "Status unbekannt",
     scope: { city: "für die Stadt", raion: "für den ganzen Bezirk Tschernihiw", oblast: "für die ganze Oblast" },
-    since: "seit", day: (h, c, l) => `Letzte 24 Std.: ${String(h).replace(".", ",")} Std. unter Alarm, ${c} Alarme (${l}).`,
+    since: "seit", day: (h, c, l) => `Letzte 24 Std.: ${String(h).replace(".", ",")} Std. unter Alarm, ${c} Alarme` + (l ? ` (${l}).` : "."),
+    rel: { lower: "ruhiger als zuletzt", same: "wie zuletzt", higher: "unruhiger als zuletzt" },
+    base: (b, n) => `Schnitt der letzten ${n} Tage: ${String(b).replace(".", ",")} Std.`,
     level: { quiet: "ruhig", normal: "normal", busy: "unruhig" },
     lastOk: (a) => `Letztes „Mir geht’s gut“: vor ${a}.`, never: "Heute wurde noch nicht bestätigt.",
     min: "Min.", h: "Std.", app: "App",
@@ -374,7 +405,7 @@ async function tgStatus(env, T) {
   } catch (e) { lines.push(T.unknown); }
   if (nationNow) lines.push(T.nation(nationNow.active, nationNow.total, nationNow.level));
   const d = last24(await readHist(env));
-  if (d && d.complete) lines.push(T.day(d.hours, d.count, T.level[d.level]));
+  if (d && d.complete) lines.push(T.day(d.hours, d.count, d.rel === "collect" ? "" : T.rel[d.rel]) + (d.base !== null ? " " + T.base(d.base, d.baseDays) : ""));
   const a = await kv(env).get("alive:main", "json");
   lines.push(a && a.at && Date.now() - Date.parse(a.at) < DAY ? T.lastOk(ago(T, Date.now() - Date.parse(a.at))) : T.never);
   lines.push(`${T.app}: ${SITE}`);
